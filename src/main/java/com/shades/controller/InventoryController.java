@@ -12,4 +12,6 @@ public class InventoryController {
     public String actionsManager(){
         return "index";
     }
+
+
 }
