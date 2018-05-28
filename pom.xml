@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.shades</groupId>
+    <artifactId>Avenger</artifactId>
+    <version>1.0</version>
+    <packaging>war</packaging>
+
+    <name>Avenger web-app</name>
+
+    <url>http://localhost:8080/avenger/</url>
+
+    <dependencies>
+        <!-- https://mvnrepository.com/artifact/org.springframework/spring-webmvc -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>5.0.6.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jstl</groupId>
+            <artifactId>jstl</artifactId>
+            <version>1.2</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>3.9</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.5</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+    <finalName>avenger</finalName>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-war-plugin</artifactId>
+            <version>3.2.1</version>
+
+            <configuration>
+                <outputDirectory>${env.TOMCAT_DEPLOYMENT}</outputDirectory>
+                <webResources>
+                    <resource>
+                        <directory>${basedir}/src/main/resources</directory>
+                        <targetPath>WEB-INF</targetPath>
+                        <includes>
+                            <include>**/application.xml</include>
+                            <include>**/*.properties</include>
+                        </includes>
+                    </resource>
+                </webResources>
+            </configuration>
+        </plugin>
+
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.1</version>
+
+            <configuration>
+                <verbose>false</verbose>
+            </configuration>
+        </plugin>
+    </plugins>
+    </build>
+</project>
