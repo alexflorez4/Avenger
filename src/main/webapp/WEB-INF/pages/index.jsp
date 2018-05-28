@@ -1,5 +1,15 @@
-<html>
-    <body>
-        <h2>Hello World!</h2>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Avenger</title>
+        <jsp:include page="header.jsp"/>
+    </head>
+
+    <body class="fixed-nav sticky-footer bg-dark" id="page-top">
+        <jsp:include page="body.jsp"/>
     </body>
 </html>
+
