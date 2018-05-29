@@ -19,7 +19,7 @@
     <mvc:resources mapping="/resources/**" location="/resources/"/>
     
     <import resource="application.xml"/>
-
+    <import resource="config-upload.xml"/>
 
 
 </beans>

@@ -1,5 +1,6 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -24,16 +25,22 @@
                 <hr>
                 <p>Upload AZ importer file</p>
 
+                <%--<form:form id="fileForm" action="processAZImportFile.do" method="post">--%>
+
+                <form class="form-inline" method="POST" action="processAZImportFile.do" enctype="multipart/form-data">
+                    <div class="form-group mx-sm-3 mb-2">
+                        <input type="file" class="form-control" id="azFile" name="azFile">
+                    </div>
+                    <button type="submit" class="btn btn-primary mb-2">Submit</button>
+                </form>
+                <%--</form:form>--%>
                 <!-- Blank div to give the page height to preview the fixed vs. static navbar-->
-                <div style="height: 1000px;"></div>
+                <%--<div style="height: 1000px;"></div>--%>
             </div>
             <!-- /.container-fluid-->
-            <!-- /.content-wrapper-->
-
             <jsp:include page="footer.jsp"/>
-
         </div>
-
+        <!-- /.content-wrapper-->
     </body>
 </html>
 

@@ -12,5 +12,6 @@
     </bean>
 
     <!--  Service Beans -->
+    <bean id="azService" class="com.shades.services.AzProcess"/>
 
 </beans>
