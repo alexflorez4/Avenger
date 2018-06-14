@@ -11,6 +11,7 @@
     <body class="fixed-nav sticky-footer bg-dark" id="page-top">
 
         <jsp:include page="navigation.jsp"/>
+
         <div class="content-wrapper">
             <jsp:include page="footer.jsp"/>
         </div>

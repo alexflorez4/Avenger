@@ -1,17 +1,57 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+
         xsi:schemaLocation="
-        http://www.springframework.org/schema/beans
-        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
+    <!--  Service Beans -->
+    <bean id="azProcess" class="com.shades.services.AzProcess"/>
 
+    <bean id="cognitoHelper" class="com.shades.cognito.CognitoHelper"/>
+
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="location">
+            <value>classpath:access.properties</value>
+        </property>
+    </bean>
+
+    <!-- Transaction Manager for the Project -->
+    <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager" autowire="byType"/>
+
+    <!-- Datasources -->
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
+        <property name="url" value="${aws_db_shades1.endpoint}"/>
+        <property name="username" value="${aws_db_shades1.username}"/>
+        <property name="password" value="${aws_db_shades1.password}"/>
+    </bean>
+
+    <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="jpaVendorAdapter">
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+                <property name="showSql" value="true"/>
+                <property name="generateDdl" value="true"/>
+            </bean>
+        </property>
+    </bean>
+
+    <!-- Resolves views selected for rendering by @Controllers to .jsp resources
+		 in the /WEB-INF/views directory -->
     <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
         <property name="prefix" value="/pages/"/>
         <property name="suffix" value=".jsp"/>
     </bean>
 
-    <!--  Service Beans -->
-    <bean id="azService" class="com.shades.services.AzProcess"/>
+    <context:component-scan base-package="com.shades"/>
+
+    <!--  Transaction Configuration -->
+    <tx:annotation-driven/>
+
+
 
 </beans>

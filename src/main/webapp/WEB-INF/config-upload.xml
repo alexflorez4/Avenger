@@ -7,9 +7,10 @@
             http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+
         <!-- maxUploadSize=10MB -->
         <property name="maxUploadSize" value="10240000"/>
-        <!--<property name="uploadTempDir" value="/uploads/"/>-->
+        <property name="uploadTempDir" value="/uploads"/>
     </bean>
 
 
