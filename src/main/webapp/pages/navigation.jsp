@@ -52,25 +52,27 @@
                         <a class="nav-link-collapse collapsed" data-toggle="collapse" href="#collapseMulti4">Admin</a>
                         <ul class="sidenav-third-level collapse" id="collapseMulti4">
                             <li>
-                                <a href="#">Electronics</a>
-                            </li>
-                            <li>
-                                <a href="#">Mochilas</a>
-                            </li>
-                            <li>
-                                <a href="#">Perfumes</a>
-                            </li>
-                            <li>
-                                <a href="<%=request.getContextPath()%>/pages/inventoryToys.jsp">Toys</a>
-                            </li>
-                            <li>
-                                <a href="#">Other</a>
+                                <a href="<%=request.getContextPath()%>/pages/inventoryUpdate.jsp">Inventory</a>
                             </li>
                         </ul>
                     </li>
                 </ul>
             </li>
             <%--end inventory--%>
+
+            <%--orders--%>
+            <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Menu Levels">
+                <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse" href="#collapseOrderMulti" data-parent="#exampleAccordion">
+                    <i class="fa fa-fw fa-sitemap"></i>
+                    <span class="nav-link-text">Orders</span>
+                </a>
+                <ul class="sidenav-second-level collapse" id="collapseOrderMulti">
+                    <li>
+                        <a href='<c:url value="orders.do"/>'>New Order</a>
+                    </li>
+                </ul>
+            </li>
+                <%--end orders--%>
 
         </ul>
         <ul class="navbar-nav sidenav-toggler">

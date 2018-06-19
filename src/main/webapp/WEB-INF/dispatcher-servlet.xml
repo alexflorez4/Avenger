@@ -17,6 +17,7 @@
     <mvc:resources mapping="/resources/**" location="/resources/"/>
 
     <import resource="config-upload.xml"/>
+    <import resource="properties.xml"/>
     <import resource="application.xml"/>
 
 

@@ -14,15 +14,17 @@
 
         <div class="content-wrapper">
             <div class="container-fluid">
+                <h1>Inventory Management</h1>
+                <hr>
                 <!-- Breadcrumbs-->
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="#">Home</a>
-                    </li>
+                    <%--<li class="breadcrumb-item">--%>
+                        <%--<a href="#">Home</a>--%>
+                    <%--</li>--%>
                     <li class="breadcrumb-item active">AZ importer</li>
                 </ol>
-                <h1>Inventory File Upload</h1>
-                <hr>
+
+
                 <p>Upload AZ importer file</p>
 
                 <%--<form:form id="fileForm" action="processAZImportFile.do" method="post">--%>
@@ -36,6 +38,22 @@
                 <%--</form:form>--%>
                 <!-- Blank div to give the page height to preview the fixed vs. static navbar-->
                 <%--<div style="height: 1000px;"></div>--%>
+            </div>
+            <div class="container-fluid">
+                <!-- Breadcrumbs-->
+                <hr>
+                <ol class="breadcrumb">
+                    <%--<li class="breadcrumb-item">--%>
+                        <%--<a href="#">Home</a>--%>
+                    <%--</li>--%>
+                    <li class="breadcrumb-item active">Fragrance X</li>
+                </ol>
+
+                <p>Click to Update Inventory</p>
+
+                <form class="form-inline" method="POST" action="processFragXInventory.do">
+                    <button type="submit" class="btn btn-primary mb-2">Update</button>
+                </form>
             </div>
             <!-- /.container-fluid-->
             <jsp:include page="footer.jsp"/>

@@ -1,8 +1,8 @@
-package com.shades.services;
+package com.shades.services.az;
 
 import Entities.InventoryEntity;
-import Entities.SellerEntity;
 import com.shades.dao.InventoryDao;
+import com.shades.utilities.Utils;
 import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -12,9 +12,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -34,10 +32,9 @@ public class AzProcess {
 
     public boolean updateInventory(File inventoryFile) {
 
-
         logger.info("Updating inventory");
 
-        Set<InventoryEntity> inventoryList = new HashSet<InventoryEntity>();
+        Set<InventoryEntity> inventoryList = new HashSet<>();
         FileInputStream fileInputStream = null;
         Workbook workbook = null;
         try {
@@ -71,9 +68,8 @@ public class AzProcess {
                     case 1: //Cost
                         Float cost = new Float(currentCell.getNumericCellValue());
                         azInventory.setSupplierPrice(cost);
-
-                        Float shadesCost = cost + new Float(cost * 0.15);
-                        azInventory.setShadesSellingPrice(shadesCost);
+                        //Float shadesCost = cost + new Float(cost * 0.15);
+                        azInventory.setShadesSellingPrice(Utils.shadesPrices(cost));
                         break;
                     case 2: //Quantity
                         azInventory.setQuantity(new Double(currentCell.getNumericCellValue()).intValue());
@@ -108,7 +104,7 @@ public class AzProcess {
             }
         }
 
-        inventoryDao.insertAzInventory(inventoryList);
+        inventoryDao.updateInventory(inventoryList);
 
         return true;
     }

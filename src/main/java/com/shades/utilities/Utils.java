@@ -24,4 +24,8 @@ public class Utils {
         }
 
     }
+
+    public static Float shadesPrices(Float cost){
+        return new Float(cost + (cost * 0.15));
+    }
 }

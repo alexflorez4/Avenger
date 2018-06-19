@@ -1,8 +1,8 @@
 package com.shades.controller;
 
-import com.shades.exceptions.ShadesException;
-import com.shades.services.AzProcess;
-import com.shades.utilities.Utils;
+import com.shades.services.az.AzProcess;
+import com.shades.services.fragx.FragxService;
+import com.shades.services.misc.AppServices;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.io.*;
+import java.util.List;
 
 
 @Controller
@@ -23,8 +24,15 @@ public class InventoryController {
     @Autowired
     private AzProcess azProcess;
 
+    @Autowired
+    private FragxService fragxService;
+
+    @Autowired
+    private AppServices appServices;
+
     @RequestMapping("/")
     public String actionsManager(){
+        logger.info("Passing through controller!!!");
         return "index";
     }
 
@@ -61,6 +69,22 @@ public class InventoryController {
             logger.error("Exception thrown " + e.getMessage());
             e.printStackTrace();
         }
-        return new ModelAndView("placeholder");
+        return new ModelAndView("inventoryUpdate");
+    }
+
+    @RequestMapping(value = "/pages/processFragXInventory", method = RequestMethod.POST)
+    public ModelAndView updateFragXInventory(){
+        logger.info("Updating FragranceX inventory at " + System.nanoTime());
+        fragxService.updateInventory();
+        return new ModelAndView("inventoryUpdate");
+    }
+
+
+    @RequestMapping("/orders")
+    public ModelAndView viewCart()
+    {
+        logger.info("Requesting Orders");
+        List<String> sku = appServices.allProductsSet();
+        return new ModelAndView("orderManual","sku",sku);
     }
 }

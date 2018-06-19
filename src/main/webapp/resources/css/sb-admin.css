@@ -65,6 +65,10 @@ body.fixed-nav {
   z-index: 1;
 }
 
+.top-buffer { margin-top: 20px; }
+
+.bottom-buffer { margin-bottom: 20px; }
+
 #mainNav .navbar-collapse {
   overflow: auto;
   max-height: 75vh;
