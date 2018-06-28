@@ -2,12 +2,12 @@ package com.shades.dao;
 
 
 import Entities.InventoryEntity;
+import Entities.OrderEntity;
+import com.shades.exceptions.ShadesException;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import javax.persistence.*;
 import java.util.List;
 import java.util.Set;
 
@@ -65,5 +65,28 @@ public class InventoryDaoImpl implements InventoryDao {
     public List<String> getAllProductsSet() {
         Query q = em.createNativeQuery("SELECT sku FROM Inventory");
         return q.getResultList();
+    }
+
+    @Override
+    public InventoryEntity findProductDetails(String sku) throws ShadesException {
+
+        Query q = em.createNativeQuery("SELECT * FROM Inventory WHERE sku = ?", InventoryEntity.class);
+        q.setParameter(1, sku);
+
+        try {
+            InventoryEntity ie = (InventoryEntity)q.getSingleResult();
+            return ie;
+        }catch (NoResultException nre){
+            throw new ShadesException("No items where found with SKU " + sku);
+        }catch (NonUniqueResultException nur){
+            throw new ShadesException("More than 1 sku were found with SKU " + sku);
+        }catch (Exception e){
+            throw new ShadesException("An error has occurred. Error: " + e.getLocalizedMessage());
+        }
+    }
+
+    @Override
+    public void placeNewOrder(OrderEntity order) {
+        em.persist(order);
     }
 }

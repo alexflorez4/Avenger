@@ -26,7 +26,8 @@
         <div class="panel-body">
             <div class="row">
                 <div class="col-lg-5 bottom-buffer">
-                    <form role="form" method="post" action="" id="orderForm">
+
+                    <form role="form" method="post" action="singleOrder.do" id="orderForm">
 
                         <div class="form-group row">
                             <label for="reference" class="col-sm-4 col-form-label">Item</label>
@@ -103,8 +104,17 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary mb-2 float-right" name="submit">Submit</button>
+                        <div class="form-group row">
+                            <label for="market" class="col-sm-4 col-form-label">Market</label>
+                            <div class="col-sm-8">
+                                <select class="form-control" id="market" name="market">
+                                    <option selected value="100">Amazon</option>
+                                    <option value="101">Ebay</option>
+                                </select>
+                            </div>
+                        </div>
 
+                        <button type="submit" class="btn btn-primary mb-2 float-right" name="submit">Submit</button>
 
                     </form>
 

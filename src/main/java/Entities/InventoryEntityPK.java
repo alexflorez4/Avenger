@@ -4,9 +4,6 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import java.io.Serializable;
 
-/**
- * Created by alexf on 6/11/2018.
- */
 public class InventoryEntityPK implements Serializable {
     private String sku;
     private int supplierId;

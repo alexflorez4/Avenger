@@ -4,17 +4,17 @@ import javax.persistence.*;
 import java.sql.Timestamp;
 
 @Entity
-@Table(name = "Inventory", schema = "aws_db_shades1", catalog = "")
+@Table(name = "Inventory", schema = "aws_db_shades1")
 @IdClass(InventoryEntityPK.class)
 public class InventoryEntity {
     private String sku;
     private int supplierId;
     private Integer quantity;
     private String supplierProductId;
-    private Float supplierPrice;
-    private Float shadesSellingPrice;
-    private Float weight;
-    private Float shippingCost;
+    private Double supplierPrice;
+    private Double shadesSellingPrice;
+    private Double weight;
+    private Double shippingCost;
     private Timestamp lastUpdate;
 
     public InventoryEntity() {
@@ -62,41 +62,41 @@ public class InventoryEntity {
 
     @Basic
     @Column(name = "supplierPrice")
-    public Float getSupplierPrice() {
+    public Double getSupplierPrice() {
         return supplierPrice;
     }
 
-    public void setSupplierPrice(Float supplierPrice) {
+    public void setSupplierPrice(Double supplierPrice) {
         this.supplierPrice = supplierPrice;
     }
 
     @Basic
     @Column(name = "shadesSellingPrice")
-    public Float getShadesSellingPrice() {
+    public Double getShadesSellingPrice() {
         return shadesSellingPrice;
     }
 
-    public void setShadesSellingPrice(Float shadesSellingPrice) {
+    public void setShadesSellingPrice(Double shadesSellingPrice) {
         this.shadesSellingPrice = shadesSellingPrice;
     }
 
     @Basic
     @Column(name = "weight")
-    public Float getWeight() {
+    public Double getWeight() {
         return weight;
     }
 
-    public void setWeight(Float weight) {
+    public void setWeight(Double weight) {
         this.weight = weight;
     }
 
     @Basic
     @Column(name = "shippingCost")
-    public Float getShippingCost() {
+    public Double getShippingCost() {
         return shippingCost;
     }
 
-    public void setShippingCost(Float shippingCost) {
+    public void setShippingCost(Double shippingCost) {
         this.shippingCost = shippingCost;
     }
 

@@ -25,7 +25,12 @@ public class Utils {
 
     }
 
-    public static Float shadesPrices(Float cost){
-        return new Float(cost + (cost * 0.15));
+    public static Double shadesPrices(Double cost){
+        return cost + (cost * 0.15);
+    }
+
+    public static Double fragXShippingCost(int quantity){
+        Double shippingCost = 4.95 + quantity;
+        return shippingCost;
     }
 }

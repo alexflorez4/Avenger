@@ -1,5 +1,7 @@
 package com.shades.client;
 
+import Entities.OrderEntity;
+import com.shades.exceptions.ShadesException;
 import com.shades.services.az.AzProcess;
 import com.shades.services.misc.AppServices;
 import org.apache.log4j.Logger;
@@ -29,7 +31,14 @@ public class client {
         }*/
 
         AppServices appServices = container.getBean(AppServices.class);
-        List<String> products = appServices.allProductsSet();
-        System.out.println(products.size());
+        //List<String> products = appServices.allProductsSet();
+        OrderEntity oe = new OrderEntity();
+        oe.setSku("400015");
+        try {
+            appServices.processNewSingleOrder(oe);
+        } catch (ShadesException e) {
+            e.printStackTrace();
+        }
+
     }
 }

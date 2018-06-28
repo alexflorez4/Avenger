@@ -4,7 +4,7 @@ import javax.persistence.*;
 
 
 @Entity
-@Table(name = "Seller", schema = "aws_db_shades1", catalog = "")
+@Table(name = "Seller", schema = "aws_db_shades1")
 public class SellerEntity {
     private int sellerId;
     private String name;

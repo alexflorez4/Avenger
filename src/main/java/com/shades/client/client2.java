@@ -16,7 +16,7 @@ public class client2 {
 
         //FragxProcess fragxProcess = container.getBean(FragxProcess.class);
         FragxService service = container.getBean(FragxService.class);
-        service.updateInventory();
+        //service.updateInventory();
 
 
 

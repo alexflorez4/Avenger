@@ -16,7 +16,6 @@
       <configuration>
         <fileset id="fileset" name="Spring Application Context - Avenger" removed="false">
           <file>file://$MODULE_DIR$/src/main/webapp/WEB-INF/dispatcher-servlet.xml</file>
-          <file>file://$MODULE_DIR$/src/main/java/application.xml</file>
         </fileset>
       </configuration>
     </facet>
@@ -34,8 +33,8 @@
         <setting name="validation-enabled" value="true" />
         <setting name="provider-name" value="" />
         <datasource-mapping>
-          <factory-entry name="entityManagerFactory" value="dataSource" />
-          <factory-entry name="myDatabaseConfig" />
+          <factory-entry name="entityManagerFactory" value="668a93a1-7465-4ebc-a14e-385f69c86b21" />
+          <factory-entry name="myDatabaseConfig" value="668a93a1-7465-4ebc-a14e-385f69c86b21" />
           <factory-entry name="noname-a.xml@0" value="668a93a1-7465-4ebc-a14e-385f69c86b21" />
         </datasource-mapping>
         <deploymentDescriptor name="persistence.xml" url="file://$MODULE_DIR$/src/main/resources/META-INF/persistence.xml" />
@@ -61,6 +60,9 @@
     <orderEntry type="library" name="Maven: org.springframework:spring-jcl:5.0.6.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-expression:5.0.6.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-web:5.0.6.RELEASE" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework.security:spring-security-web:5.0.6.RELEASE" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework.security:spring-security-core:5.0.6.RELEASE" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework.security:spring-security-config:5.0.6.RELEASE" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.11" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.hamcrest:hamcrest-core:1.3" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Maven: jstl:jstl:1.2" level="project" />

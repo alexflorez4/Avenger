@@ -2,11 +2,8 @@ package Entities;
 
 import javax.persistence.*;
 
-/**
- * Created by alexf on 6/11/2018.
- */
 @Entity
-@Table(name = "Market", schema = "aws_db_shades1", catalog = "")
+@Table(name = "Market", schema = "aws_db_shades1")
 public class MarketEntity {
     private int marketId;
     private String marketName;

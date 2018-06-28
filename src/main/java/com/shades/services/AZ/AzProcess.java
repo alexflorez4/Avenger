@@ -66,7 +66,7 @@ public class AzProcess {
                         azInventory.setSku(currentCell.getStringCellValue());
                         break;
                     case 1: //Cost
-                        Float cost = new Float(currentCell.getNumericCellValue());
+                        Double cost = currentCell.getNumericCellValue();
                         azInventory.setSupplierPrice(cost);
                         //Float shadesCost = cost + new Float(cost * 0.15);
                         azInventory.setShadesSellingPrice(Utils.shadesPrices(cost));
@@ -75,23 +75,23 @@ public class AzProcess {
                         azInventory.setQuantity(new Double(currentCell.getNumericCellValue()).intValue());
                         break;
                     case 3://weight
-                        Float weight = new Float(currentCell.getNumericCellValue());
+                        Double weight =  currentCell.getNumericCellValue();
                         azInventory.setWeight(weight);
 
                         if(weight <= 1){
-                            azInventory.setShippingCost(new Float(7.50));
+                            azInventory.setShippingCost(7.50);
                         }else if(weight <= 2){
-                            azInventory.setShippingCost(new Float(10.80));
+                            azInventory.setShippingCost(10.80);
                         }else if(weight <= 3){
-                            azInventory.setShippingCost(new Float(15.00));
+                            azInventory.setShippingCost(15.00);
                         }else if(weight <= 4){
-                            azInventory.setShippingCost(new Float(17.00));
+                            azInventory.setShippingCost(17.00);
                         }else if(weight <= 6){
-                            azInventory.setShippingCost(new Float(18.00));
+                            azInventory.setShippingCost(18.00);
                         }else if(weight <= 7){
-                            azInventory.setShippingCost(new Float(20.00));
+                            azInventory.setShippingCost(20.00);
                         }else {
-                            azInventory.setShippingCost(new Float(99.00));
+                            azInventory.setShippingCost(99.00);
                         }
 
                         break;

@@ -3,11 +3,9 @@ package Entities;
 import javax.persistence.*;
 import java.sql.Timestamp;
 
-/**
- * Created by alexf on 6/11/2018.
- */
+
 @Entity
-@Table(name = "Order", schema = "aws_db_shades1", catalog = "")
+@Table(name = "Order", schema = "aws_db_shades1")
 public class OrderEntity {
     private int orderId;
     private Timestamp orderDate;
@@ -16,7 +14,6 @@ public class OrderEntity {
     private Integer supplierId;
     private String marketOrderId;
     private String supplierOrderId;
-    private int inventoryId;
     private String sku;
     private String marketListingId;
     private String asin;
@@ -28,6 +25,7 @@ public class OrderEntity {
     private String state;
     private String other;
     private String zipCode;
+    private String country;
     private String trackingId;
     private Double supplierPrice;
     private Double shadesPrice;
@@ -108,16 +106,6 @@ public class OrderEntity {
 
     public void setSupplierOrderId(String supplierOrderId) {
         this.supplierOrderId = supplierOrderId;
-    }
-
-    @Basic
-    @Column(name = "inventoryId")
-    public int getInventoryId() {
-        return inventoryId;
-    }
-
-    public void setInventoryId(int inventoryId) {
-        this.inventoryId = inventoryId;
     }
 
     @Basic
@@ -231,6 +219,16 @@ public class OrderEntity {
     }
 
     @Basic
+    @Column(name = "country")
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    @Basic
     @Column(name = "trackingId")
     public String getTrackingId() {
         return trackingId;
@@ -319,7 +317,6 @@ public class OrderEntity {
 
         if (orderId != that.orderId) return false;
         if (sellerId != that.sellerId) return false;
-        if (inventoryId != that.inventoryId) return false;
         if (quantity != that.quantity) return false;
         if (orderDate != null ? !orderDate.equals(that.orderDate) : that.orderDate != null) return false;
         if (marketId != null ? !marketId.equals(that.marketId) : that.marketId != null) return false;
@@ -363,7 +360,6 @@ public class OrderEntity {
         result = 31 * result + (supplierId != null ? supplierId.hashCode() : 0);
         result = 31 * result + (marketOrderId != null ? marketOrderId.hashCode() : 0);
         result = 31 * result + (supplierOrderId != null ? supplierOrderId.hashCode() : 0);
-        result = 31 * result + inventoryId;
         result = 31 * result + (sku != null ? sku.hashCode() : 0);
         result = 31 * result + (marketListingId != null ? marketListingId.hashCode() : 0);
         result = 31 * result + (asin != null ? asin.hashCode() : 0);
@@ -384,5 +380,38 @@ public class OrderEntity {
         result = 31 * result + (currency != null ? currency.hashCode() : 0);
         result = 31 * result + (observations != null ? observations.hashCode() : 0);
         return result;
+    }
+
+
+    @Override
+    public String toString() {
+        return  "orderId=" + orderId +
+                ", orderDate=" + orderDate +
+                ", sellerId=" + sellerId +
+                ", marketId=" + marketId +
+                ", supplierId=" + supplierId +
+                ", marketOrderId='" + marketOrderId + '\'' +
+                ", supplierOrderId='" + supplierOrderId + '\'' +
+                ", sku='" + sku + '\'' +
+                ", marketListingId='" + marketListingId + '\'' +
+                ", asin='" + asin + '\'' +
+                ", quantity=" + quantity +
+                ", buyerName='" + buyerName + '\'' +
+                ", street='" + street + '\'' +
+                ", street2='" + street2 + '\'' +
+                ", city='" + city + '\'' +
+                ", state='" + state + '\'' +
+                ", other='" + other + '\'' +
+                ", zipCode='" + zipCode + '\'' +
+                ", country='" + country + '\'' +
+                ", trackingId='" + trackingId + '\'' +
+                ", supplierPrice=" + supplierPrice +
+                ", shadesPrice=" + shadesPrice +
+                ", shippingCost=" + shippingCost +
+                ", totalPriceShades=" + totalPriceShades +
+                ", marketSoldAmount=" + marketSoldAmount +
+                ", currency='" + currency + '\'' +
+                ", observations='" + observations + '\'' +
+                '}';
     }
 }

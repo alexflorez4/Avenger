@@ -1,5 +1,7 @@
 package com.shades.controller;
 
+import Entities.OrderEntity;
+import com.shades.exceptions.ShadesException;
 import com.shades.services.az.AzProcess;
 import com.shades.services.fragx.FragxService;
 import com.shades.services.misc.AppServices;
@@ -76,7 +78,7 @@ public class InventoryController {
     public ModelAndView updateFragXInventory(){
         logger.info("Updating FragranceX inventory at " + System.nanoTime());
         fragxService.updateInventory();
-        return new ModelAndView("inventoryUpdate");
+        return new ModelAndView("pages/inventoryUpdate");
     }
 
 
@@ -86,5 +88,42 @@ public class InventoryController {
         logger.info("Requesting Orders");
         List<String> sku = appServices.allProductsSet();
         return new ModelAndView("orderManual","sku",sku);
+    }
+
+    @RequestMapping("/singleOrder")
+    public ModelAndView newSingleOrder(
+            @RequestParam("reference") String reference,
+            @RequestParam("itemQuantity") Integer quantity,
+            @RequestParam("bName") String buyerName,
+            @RequestParam("bAddress") String buyerAddress,
+            @RequestParam("bApt") String apartment,
+            @RequestParam("bCiti") String city,
+            @RequestParam("bState") String state,
+            @RequestParam("bZip") String zipCode,
+            @RequestParam("bCountry") String country,
+            @RequestParam("bNotes") String notes,
+            @RequestParam("market") Integer marketId){
+
+        OrderEntity order = new OrderEntity();
+        order.setSku(reference);
+        order.setQuantity(quantity);
+        order.setBuyerName(buyerName);
+        order.setStreet(buyerAddress);
+        order.setStreet2(apartment);
+        order.setCity(city);
+        order.setState(state);
+        order.setZipCode(zipCode);
+        order.setCountry(country);
+        order.setObservations(notes);
+        order.setMarketId(marketId);
+
+        try {
+            appServices.processNewSingleOrder(order);
+
+        } catch (ShadesException e) { //// TODO: 6/19/2018 Handle errors
+            e.printStackTrace();
+        }
+
+        return new ModelAndView("index", "", null);
     }
 }
