@@ -1,8 +1,8 @@
 package com.shades.dao;
 
-
 import Entities.InventoryEntity;
 import Entities.OrderEntity;
+import Entities.SellerEntity;
 import com.shades.exceptions.ShadesException;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Repository;
@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 import javax.persistence.*;
 import java.util.List;
 import java.util.Set;
-
 
 @Repository
 public class InventoryDaoImpl implements InventoryDao {
@@ -88,5 +87,21 @@ public class InventoryDaoImpl implements InventoryDao {
     @Override
     public void placeNewOrder(OrderEntity order) {
         em.persist(order);
+    }
+
+    @Override
+    public int getUserId(String seller) throws ShadesException {
+
+        try {
+            Query q = em.createNativeQuery("SELECT * FROM Seller WHERE username = ?", SellerEntity.class);
+            q.setParameter(1, seller);
+            System.out.println("Seller: " + seller);
+            SellerEntity se = (SellerEntity) q.getSingleResult();
+            System.out.println("Seller Id " + se.getSellerId());
+            return se.getSellerId();
+        }catch (NoResultException nre){
+            throw new ShadesException("No seller id found as " + seller);
+        }
+
     }
 }

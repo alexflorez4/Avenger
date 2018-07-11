@@ -1,0 +1,41 @@
+<beans xmlns:security="http://www.springframework.org/schema/security"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+
+       xsi:schemaLocation="http://www.springframework.org/schema/security
+		http://www.springframework.org/schema/security/spring-security.xsd
+		http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <import resource="application.xml"/>
+
+    <bean id="myFailureHandler" class="com.shades.security.UsernameRememberingAuthenticationFailureHandler" autowire="byType">
+        <property name="redirectTarget" value="/pages/login.jsp"/>
+    </bean>
+    <security:http pattern="/resources/**" security="none"/>
+
+    <security:http>
+        <security:csrf disabled="true"/>
+        <security:intercept-url pattern="/pages/login.jsp" access="permitAll"/>
+        <security:intercept-url pattern="/pages/inventoryUpdate.jsp" access="hasRole('ROLE_ADMIN')"/>
+        <security:intercept-url pattern="/**" access="hasRole('ROLE_USER')"/>
+        <security:form-login login-processing-url="/performLogin" login-page="/pages/login.jsp"
+                             authentication-failure-handler-ref="myFailureHandler"/>
+        <security:logout invalidate-session="true" logout-success-url=""/> <!-- logout; automatically logout -->
+    </security:http>
+
+
+
+    <security:authentication-manager>
+        <security:authentication-provider>
+            <security:jdbc-user-service data-source-ref="dataSource"
+                                        users-by-username-query="SELECT username, password, enabled FROM Seller WHERE username=?"
+                                        authorities-by-username-query="SELECT username, role FROM Roles WHERE username=?"/>
+            <!--<security:user-service>-->
+                <!--<security:user name="rac" password="{noop}secret"  authorities="ROLE_ADMIN, ROLE_USER"/>-->
+                <!--<security:user name="joe" password="{noop}password" authorities="ROLE_USER"/>-->
+            <!--</security:user-service>-->
+        </security:authentication-provider>
+    </security:authentication-manager>
+
+</beans>

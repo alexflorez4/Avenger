@@ -7,6 +7,9 @@ import com.shades.services.fragx.FragxService;
 import com.shades.services.misc.AppServices;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -14,7 +17,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.*;
+import java.security.Principal;
 import java.util.List;
 
 
@@ -33,8 +38,13 @@ public class InventoryController {
     private AppServices appServices;
 
     @RequestMapping("/")
-    public String actionsManager(){
+    public String actionsManager(HttpServletRequest request){
         logger.info("Passing through controller!!!");
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        System.out.println("************************" + userDetails.getUsername());
+        System.out.println("Authorities: " + userDetails.getAuthorities().size());
+        request.getSession().setAttribute("roles", String.valueOf(userDetails.getAuthorities().size()));
+        request.getSession().setAttribute("user",userDetails.getUsername());
         return "index";
     }
 
@@ -102,7 +112,8 @@ public class InventoryController {
             @RequestParam("bZip") String zipCode,
             @RequestParam("bCountry") String country,
             @RequestParam("bNotes") String notes,
-            @RequestParam("market") Integer marketId){
+            @RequestParam("market") Integer marketId,
+            @RequestParam("seller") String sellerName){
 
         OrderEntity order = new OrderEntity();
         order.setSku(reference);
@@ -118,7 +129,7 @@ public class InventoryController {
         order.setMarketId(marketId);
 
         try {
-            appServices.processNewSingleOrder(order);
+            appServices.processNewSingleOrder(order, sellerName);
 
         } catch (ShadesException e) { //// TODO: 6/19/2018 Handle errors
             e.printStackTrace();

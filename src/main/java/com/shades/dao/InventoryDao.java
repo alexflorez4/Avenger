@@ -18,4 +18,6 @@ public interface InventoryDao {
     InventoryEntity findProductDetails(String sku) throws ShadesException;
 
     void placeNewOrder(OrderEntity order);
+
+    int getUserId(String seller) throws ShadesException;
 }

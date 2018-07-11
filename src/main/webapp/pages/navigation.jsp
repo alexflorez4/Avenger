@@ -2,7 +2,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!-- Navigation-->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
-    <a class="navbar-brand" href="<%=request.getContextPath()%>">AVENGER</a>
+    <a class="navbar-brand" href="<%=request.getContextPath()%>">AVENGER - <%=session.getAttribute("user")%></a>
     <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
             data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false"
             aria-label="Toggle navigation">
@@ -41,7 +41,7 @@
                 </a>
                 <ul class="sidenav-second-level collapse" id="collapseOrderMulti">
                     <li>
-                        <%--<a href='<c:url value="orders.do"/>'>New Order</a>--%>
+                            <%--<a href='<c:url value="orders.do"/>'>New Order</a>--%>
                         <a href="<%=request.getContextPath()%>/orders.do">New Order</a>
                     </li>
                 </ul>
@@ -49,20 +49,22 @@
             <%--end orders--%>
 
             <%--admin--%>
-            <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Menu Levels">
-                <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse" href="#collapseAdminMulti"
-                   data-parent="#exampleAccordion">
-                    <i class="fa fa-fw fa-sitemap"></i>
-                    <span class="nav-link-text">Admin</span>
-                </a>
-                <ul class="sidenav-second-level collapse" id="collapseAdminMulti">
-                    <li>
-                        <%--<a href="<%=request.getContextPath()%>/pages/inventoryUpdate.jsp">Inventory</a>--%>
-                        <%--<a href='<c:url value="inventoryUpdate.jsp"/>'>Inventory</a>--%>
-                        <a href="<%=request.getContextPath()%>/pages/inventoryUpdate.jsp">Inventory</a>
-                    </li>
-                </ul>
-            </li>
+            <% if(session != null && session.getAttribute("roles").equals("2")) {%>
+                <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Menu Levels">
+                    <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse" href="#collapseAdminMulti"
+                       data-parent="#exampleAccordion">
+                        <i class="fa fa-fw fa-sitemap"></i>
+                        <span class="nav-link-text">Admin</span>
+                    </a>
+                    <ul class="sidenav-second-level collapse" id="collapseAdminMulti">
+                        <li>
+                            <%--<a href="<%=request.getContextPath()%>/pages/inventoryUpdate.jsp">Inventory</a>--%>
+                            <%--<a href='<c:url value="inventoryUpdate.jsp"/>'>Inventory</a>--%>
+                            <a href="<%=request.getContextPath()%>/pages/inventoryUpdate.jsp">Inventory</a>
+                        </li>
+                    </ul>
+                </li>
+            <%}%>
             <%--end admin--%>
 
         </ul>
@@ -75,7 +77,7 @@
         </ul>
         <ul class="navbar-nav ml-auto">
             <li class="nav-item">
-                <a class="nav-link" data-toggle="modal" data-target="#exampleModal">
+                <a class="nav-link" href="<%=request.getContextPath()%>/logout">
                     <i class="fa fa-fw fa-sign-out"></i>Logout</a>
             </li>
         </ul>

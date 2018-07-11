@@ -4,11 +4,15 @@ import javax.persistence.*;
 
 
 @Entity
-@Table(name = "Seller", schema = "aws_db_shades1")
+@Table(name = "Seller", schema = "aws_db_shades1", catalog = "")
+@IdClass(SellerEntityPK.class)
 public class SellerEntity {
     private int sellerId;
     private String name;
     private String email;
+    private String username;
+    private String password;
+    private byte enabled;
 
     public SellerEntity() {
     }
@@ -69,5 +73,35 @@ public class SellerEntity {
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (email != null ? email.hashCode() : 0);
         return result;
+    }
+
+    @Id
+    @Column(name = "username")
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    @Basic
+    @Column(name = "password")
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    @Basic
+    @Column(name = "enabled")
+    public byte getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(byte enabled) {
+        this.enabled = enabled;
     }
 }

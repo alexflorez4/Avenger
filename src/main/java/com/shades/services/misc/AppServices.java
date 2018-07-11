@@ -33,13 +33,16 @@ public class AppServices {
         return inventoryDao.getAllProductsSet();
     }
 
-    public boolean processNewSingleOrder(OrderEntity order) throws ShadesException{
+    public boolean processNewSingleOrder(OrderEntity order, String seller) throws ShadesException{
+
+        int sellerId = inventoryDao.getUserId(seller);
 
         InventoryEntity product = inventoryDao.findProductDetails(order.getSku());
         processProductDetails(order, product);
         order.setSellerId(1);
         order.setOrderDate(new Timestamp(System.currentTimeMillis()));
         order.setSupplierId(product.getSupplierId());
+        order.setSellerId(sellerId);
 
         inventoryDao.placeNewOrder(order);
 

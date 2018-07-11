@@ -29,6 +29,8 @@
 
                     <form role="form" method="post" action="singleOrder.do" id="orderForm">
 
+                        <input type="hidden" name="seller" value="<%= session.getAttribute("user") %>">
+
                         <div class="form-group row">
                             <label for="reference" class="col-sm-4 col-form-label">Item</label>
                             <div class="col-sm-8">
