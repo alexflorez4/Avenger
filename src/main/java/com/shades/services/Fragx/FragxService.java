@@ -18,6 +18,8 @@ import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 
 @Transactional
@@ -37,11 +39,31 @@ public class FragxService {
         Set<InventoryEntity> inventorySet = new HashSet<>();
 
         try {
+
+            List<InventoryEntity> oldList = inventoryDao.getProductsBySupplier(501);
+
             FrgxListingApiClient client = new FrgxListingApiClient(apiId, apiKey);
-            List<Product> products = client.getAllProductList();
+            List<Product> newList = client.getAllProductList();
+
+            //Out of Stock Inventory
+            Predicate<InventoryEntity> predicate = inventoryEntity -> newList.stream().noneMatch(s -> s.getItemId().equalsIgnoreCase(inventoryEntity.getSku()));
+            Set<InventoryEntity> outOfStockItems = oldList.stream().filter(predicate).collect(Collectors.toSet());
+            outOfStockItems.stream().forEach(inventoryEntity -> inventoryEntity.setQuantity(0));
+            inventoryDao.updateInventory(outOfStockItems);
+            logger.info("Out of Stock items: " + outOfStockItems.size());
+
+            //New Inventory
+            Predicate<Product> predicate2 = new Predicate<Product>() {
+                @Override
+                public boolean test(Product product) {
+                    return oldList.stream().noneMatch(s -> s.getSku().equalsIgnoreCase(product.getItemId()));
+                }
+            };
+            List<Product> newItems = newList.stream().filter(predicate2).collect(Collectors.toList());
+            logger.info("New items: " + newItems.size());
 
             //TODO: FIX THIS LAMBDA EXPRESSION, USE FUNCTIONAL - COLLECT
-            products.stream().forEach(s -> {
+            newItems.stream().forEach(s -> {
                 InventoryEntity inventoryEntity = new InventoryEntity();
                 inventoryEntity.setSku(s.getItemId());
                 inventoryEntity.setSupplierId(501);
@@ -71,13 +93,12 @@ public class FragxService {
         this.apiKey = apiKey;
     }
 
-    public Product getProductDetails(InventoryEntity product) {
+    public Product getProductDetails(InventoryEntity product){
 
         Product productInfo = null;
         try {
             FrgxListingApiClient client = new FrgxListingApiClient(apiId, apiKey);
             productInfo = client.getProductById(product.getSku());
-
         } catch (IOException e) {
             e.printStackTrace();
         } catch (BadAccessIdOrKeyException e) {

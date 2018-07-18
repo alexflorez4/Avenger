@@ -62,19 +62,18 @@ public class AzProcess {
                 int cell = currentCell.getColumnIndex();
 
                 switch (cell){
-                    case 0: //sku
+                    case 0: //Item Sku
                         azInventory.setSku(currentCell.getStringCellValue());
                         break;
-                    case 1: //Cost
+                    case 1: //Wholesale Price
                         Double cost = currentCell.getNumericCellValue();
                         azInventory.setSupplierPrice(cost);
-                        //Float shadesCost = cost + new Float(cost * 0.15);
                         azInventory.setShadesSellingPrice(Utils.shadesPrices(cost));
                         break;
                     case 2: //Quantity
                         azInventory.setQuantity(new Double(currentCell.getNumericCellValue()).intValue());
                         break;
-                    case 3://weight
+                    case 3://Weight Per Unit
                         Double weight =  currentCell.getNumericCellValue();
                         azInventory.setWeight(weight);
 

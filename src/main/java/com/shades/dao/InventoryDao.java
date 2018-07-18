@@ -17,7 +17,13 @@ public interface InventoryDao {
 
     InventoryEntity findProductDetails(String sku) throws ShadesException;
 
-    void placeNewOrder(OrderEntity order);
+    void placeNewOrder(OrderEntity order) throws ShadesException;
 
-    int getUserId(String seller) throws ShadesException;
+    int getSellerId(String seller) throws ShadesException;
+
+    int getNextOrderId() throws ShadesException;
+
+    List<InventoryEntity> getProductsBySupplier(int i);
+
+    List<OrderEntity> getPendingOrdersBySeller(int sellerId);
 }

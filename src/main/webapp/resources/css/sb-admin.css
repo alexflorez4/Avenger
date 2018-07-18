@@ -69,6 +69,8 @@ body.fixed-nav {
 
 .bottom-buffer { margin-bottom: 20px; }
 
+.excel-format {  font-size: 8px; }
+
 #mainNav .navbar-collapse {
   overflow: auto;
   max-height: 75vh;

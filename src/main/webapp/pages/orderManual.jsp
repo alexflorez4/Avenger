@@ -2,6 +2,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -29,7 +30,7 @@
 
                     <form role="form" method="post" action="singleOrder.do" id="orderForm">
 
-                        <input type="hidden" name="seller" value="<%= session.getAttribute("user") %>">
+                        <input type="hidden" name="seller" value="<sec:authentication property='principal.username'/>">
 
                         <div class="form-group row">
                             <label for="reference" class="col-sm-4 col-form-label">Item</label>

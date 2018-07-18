@@ -10,7 +10,7 @@
 </head>
 <body>
 
-    <h2>Process Failed</h2>
+    <h2>Amazon inventory placeholder</h2>
 
 </body>
 </html>

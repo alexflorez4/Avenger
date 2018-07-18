@@ -18,10 +18,17 @@
                 <hr>
                 <!-- Breadcrumbs-->
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item active">AZ importer</li>
+                    <li class="breadcrumb-item active">AZ importer Inventory File Upload</li>
                 </ol>
 
-                <p>Upload AZ importer file</p>
+                <c:if test="${status == 'success'}">
+                    <div class="alert alert-success">
+                        Inventory Updated Successfully!
+                    </div>
+                </c:if>
+
+                <div style="font-size: small"> <p>Item Sku - Wholesale Price - Quantity - Weight Per Unit</p></div>
+                <%--<p>Item Sku - Wholesale Price - Quantity - Weight Per Unit</p>--%>
 
                 <form class="form-inline" method="POST" action="processAZImportFile.do" enctype="multipart/form-data">
                     <div class="form-group mx-sm-3 mb-2">
@@ -35,6 +42,12 @@
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item active">Fragrance X</li>
                 </ol>
+
+                <c:if test="${fragStatus == 'success'}">
+                    <div class="alert alert-success">
+                        Inventory Updated Successfully!
+                    </div>
+                </c:if>
 
                 <p>Click to Update Inventory</p>
 

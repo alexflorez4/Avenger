@@ -5,9 +5,13 @@ import Entities.OrderEntity;
 import Entities.SellerEntity;
 import com.shades.exceptions.ShadesException;
 import org.apache.log4j.Logger;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.TransactionSystemException;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -16,21 +20,12 @@ public class InventoryDaoImpl implements InventoryDao {
 
     private static final Logger logger = Logger.getLogger(InventoryDaoImpl.class);
 
-    @PersistenceContext //(type= PersistenceContextType.EXTENDED)
+    @PersistenceContext
     private EntityManager em;
 
     public void updateInventory(Set<InventoryEntity> inventorySet) {
 
         logger.info("DAO: Updating inventory");
-        logger.info("FragX quantity1: " + inventorySet.size());
-        //Set<InventoryEntity> inventorySetClone = new
-        Query resetInventoryQry = em.createNativeQuery("" +
-                "UPDATE aws_db_shades1.Inventory SET quantity = ? WHERE supplierId = ?");
-        resetInventoryQry.setParameter(1, 0);
-        logger.info("Supplier id: " + inventorySet.stream().findFirst().get().getSupplierId());
-        logger.info("FragX quantity2: " + inventorySet.size());
-        resetInventoryQry.setParameter(2, inventorySet.stream().findFirst().get().getSupplierId());
-        resetInventoryQry.executeUpdate();
 
         Query query = em.createNativeQuery("" +
                 "INSERT IGNORE INTO aws_db_shades1.Inventory(sku, supplierId, quantity, supplierProductId, supplierPrice, shadesSellingPrice, weight, shippingCost, lastUpdate)" +
@@ -54,9 +49,7 @@ public class InventoryDaoImpl implements InventoryDao {
                 query.setParameter(13, entity.getLastUpdate());
 
                 query.executeUpdate();
-                logger.info("inserting: " + entity.getSku());
             }
-
         );
     }
 
@@ -85,23 +78,82 @@ public class InventoryDaoImpl implements InventoryDao {
     }
 
     @Override
-    public void placeNewOrder(OrderEntity order) {
-        em.persist(order);
+    public void placeNewOrder(OrderEntity order) throws ShadesException {
+
+        InventoryEntity item = findProductDetails(order.getSku());
+
+        Query q =  em.createNativeQuery("INSERT IGNORE INTO aws_db_shades1.Order (" +
+                "orderId, orderDate, sellerId, marketId, supplierId, marketOrderId, sku, marketListingId, asin, " +
+                "quantity, buyerName, street, street2, city, state, other, zipCode, country, supplierPrice,\n" +
+                "shadesPrice, shippingCost, totalPriceShades, marketSoldAmount, currency, observations)" +
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+
+        q.setParameter(1, order.getOrderId());
+        q.setParameter(2, new Timestamp(System.currentTimeMillis()));
+        q.setParameter(3, order.getSellerId());
+        q.setParameter(4, order.getMarketId());
+        q.setParameter(5, item.getSupplierId()); //Supplier Id
+        q.setParameter(6, order.getMarketOrderId());
+        q.setParameter(7, order.getSku());
+        q.setParameter(8, order.getMarketListingId());
+        q.setParameter(9, order.getAsin());
+        q.setParameter(10, order.getQuantity());
+        q.setParameter(11, order.getBuyerName());
+        q.setParameter(12, order.getStreet());
+        q.setParameter(13, order.getStreet2());
+        q.setParameter(14, order.getCity());
+        q.setParameter(15, order.getState());
+        q.setParameter(16, order.getOther());
+        q.setParameter(17, order.getZipCode());
+        q.setParameter(18, order.getCountry());
+        q.setParameter(19, item.getSupplierPrice()); //Supplier price
+        q.setParameter(20, item.getShadesSellingPrice()); //Shades price
+        q.setParameter(21, item.getShippingCost()); //Shipping cost
+        q.setParameter(22, item.getShadesSellingPrice() + item.getShippingCost()); //Total Price Shades
+        q.setParameter(23, order.getMarketSoldAmount());
+        q.setParameter(24, order.getCurrency());
+        q.setParameter(25, order.getObservations());
+        q.executeUpdate();
     }
 
     @Override
-    public int getUserId(String seller) throws ShadesException {
+    public int getSellerId(String sellerName) throws ShadesException {
 
         try {
             Query q = em.createNativeQuery("SELECT * FROM Seller WHERE username = ?", SellerEntity.class);
-            q.setParameter(1, seller);
-            System.out.println("Seller: " + seller);
+            q.setParameter(1, sellerName);
             SellerEntity se = (SellerEntity) q.getSingleResult();
-            System.out.println("Seller Id " + se.getSellerId());
             return se.getSellerId();
         }catch (NoResultException nre){
-            throw new ShadesException("No seller id found as " + seller);
+            throw new ShadesException("No sellerName id found as " + sellerName);
         }
 
+    }
+
+    @Override
+    public int getNextOrderId() throws ShadesException {
+        try {
+            Query q = em.createNativeQuery("SELECT max(orderId) from `Order`;");
+            int lastOrder = (int) q.getSingleResult();
+            return lastOrder +1;
+        }catch (NoResultException nre){
+            throw new ShadesException("Error trying to retrieve max order id.");
+        }
+    }
+
+    @Override
+    public List<InventoryEntity> getProductsBySupplier(int supplierId) {
+        Query q = em.createNativeQuery("SELECT * FROM Inventory WHERE supplierId = ?", InventoryEntity.class);
+        q.setParameter(1, supplierId);
+        List<InventoryEntity> list = q.getResultList();
+        return list;
+    }
+
+    @Override
+    public List<OrderEntity> getPendingOrdersBySeller(int sellerId) {
+        Query q = em.createNativeQuery("SELECT * FROM `Order` WHERE sellerId = ?", OrderEntity.class);
+        q.setParameter(1, sellerId);
+        List<OrderEntity> orders = q.getResultList();
+        return orders;
     }
 }

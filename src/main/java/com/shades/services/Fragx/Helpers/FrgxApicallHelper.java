@@ -75,7 +75,6 @@ public class FrgxApicallHelper implements IFrgxApicallHelper {
         } catch (NullResponseException e) {
             System.out.println(e.getMsg());
         }
-
     }
 
     /**
