@@ -16,8 +16,22 @@ public class InventoryEntity {
     private Double weight;
     private Double shippingCost;
     private Timestamp lastUpdate;
+    private String status;
 
     public InventoryEntity() {
+    }
+
+    public InventoryEntity(String sku, Integer quantity, int supplierId, Double supplierPrice, Double shadesSellingPrice, Double shippingCost, String status, Timestamp lastUpdate, Double weight, String supplierProductId) {
+        this.sku = sku;
+        this.quantity = quantity;
+        this.supplierId = supplierId;
+        this.supplierPrice = supplierPrice;
+        this.shadesSellingPrice = shadesSellingPrice;
+        this.shippingCost = shippingCost;
+        this.status = status;
+        this.lastUpdate = lastUpdate;
+        this.weight = weight;
+        this.supplierProductId = supplierProductId;
     }
 
     @Id
@@ -110,11 +124,21 @@ public class InventoryEntity {
         this.lastUpdate = lastUpdate;
     }
 
+    @Basic
+    @Column(name = "status")
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     @Override
     public String toString() {
         return  "sku: " + sku + " - Supplier Id:" + supplierId + " - Quantity: " + quantity +
                 " - Supplier Product Id:" + supplierProductId + " - Supplier Price: " + supplierPrice +
                 " - Shades Selling Price: " + shadesSellingPrice + "  Weight: " + weight +
-                " - Shipping cost: " + shippingCost + " - last Update:" + lastUpdate;
+                " - Shipping cost: " + shippingCost + " - last Update:" + lastUpdate + " - Status " + status;
     }
 }

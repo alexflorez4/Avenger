@@ -26,4 +26,6 @@ public interface InventoryDao {
     List<InventoryEntity> getProductsBySupplier(int i);
 
     List<OrderEntity> getPendingOrdersBySeller(int sellerId);
+
+    OrderEntity getOrderById(int orderId);
 }

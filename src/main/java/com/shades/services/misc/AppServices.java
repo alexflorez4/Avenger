@@ -115,4 +115,8 @@ public class AppServices {
         List<OrderEntity> sellerOrders = inventoryDao.getPendingOrdersBySeller(sellerId);
         return sellerOrders;
     }
+
+    public OrderEntity getOrderById(int id) {
+        return inventoryDao.getOrderById(id);
+    }
 }

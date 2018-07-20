@@ -52,7 +52,7 @@ public class InventoryController {
     }
 
     @RequestMapping(value = "/pages/processAZImportFile", method = RequestMethod.POST)
-    public ModelAndView processAZInventoryUpdate(@RequestParam("azFile") MultipartFile file){
+    public ModelAndView processAZInventoryUpdate(@RequestParam("azFile") MultipartFile file, @RequestParam("supplier") int supplierId){
 
         logger.info("Controller accessed.");
         String rootPath = System.getProperty("catalina.home");
@@ -75,7 +75,7 @@ public class InventoryController {
         }
 
         try {
-            azProcess.updateInventory(serverFile);
+            azProcess.updateInventory(serverFile, supplierId);
         } catch (Exception e) {
             logger.error("Exception thrown " + e.getMessage());
             e.printStackTrace();
@@ -87,8 +87,14 @@ public class InventoryController {
     @RequestMapping(value = "/pages/processFragXInventory", method = RequestMethod.POST)
     public ModelAndView updateFragXInventory(){
         logger.info("Updating FragranceX inventory at " + System.nanoTime());
-        fragxService.updateInventory();
-        String fragStatus = "success";
+        String fragStatus;
+        try {
+            fragxService.updateInventory();
+            fragStatus = "success";
+        } catch (ShadesException e) {
+            fragStatus = "Error updating inventory. Cause: " + e;
+        }
+
         return new ModelAndView("inventoryUpdate", "fragStatus", fragStatus);
     }
 
@@ -186,7 +192,8 @@ public class InventoryController {
     @RequestMapping("/viewOrder/{id}")
     public ModelAndView viewSingleOrder(@PathVariable int id){
         System.out.println("Order id: " + id);
-        return new ModelAndView("viewOrder");
+        OrderEntity order = appServices.getOrderById(id);
+        return new ModelAndView("viewOrder", "order", order);
     }
 
 }

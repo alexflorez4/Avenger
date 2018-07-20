@@ -41,7 +41,7 @@ public class InventoryDaoImpl implements InventoryDao {
                 query.setParameter(6, entity.getShadesSellingPrice());
                 query.setParameter(7, entity.getWeight());
                 query.setParameter(8, entity.getShippingCost());
-                query.setParameter(9, entity.getLastUpdate());
+                query.setParameter(9, new Timestamp(System.currentTimeMillis()));
 
                 query.setParameter(10, entity.getQuantity());
                 query.setParameter(11, entity.getSupplierPrice());
@@ -155,5 +155,12 @@ public class InventoryDaoImpl implements InventoryDao {
         q.setParameter(1, sellerId);
         List<OrderEntity> orders = q.getResultList();
         return orders;
+    }
+
+    @Override
+    public OrderEntity getOrderById(int orderId) {
+        Query q = em.createNativeQuery("SELECT * FROM `Order` WHERE  orderId = ?", OrderEntity.class);
+        q.setParameter(1, orderId);
+        return (OrderEntity) q.getSingleResult();
     }
 }

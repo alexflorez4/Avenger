@@ -13,11 +13,15 @@ public class FragXUpdateInventory {
 
     static Logger logger = Logger.getLogger(FragXUpdateInventory.class);
 
-    public static void main(String[] args) throws ShadesException {
+    public static void main(String[] args){
 
         ClassPathXmlApplicationContext container = new ClassPathXmlApplicationContext("/application.xml");
         FragxService service = container.getBean(FragxService.class);
-        service.updateInventory();
+        try {
+            service.updateInventory();
+        } catch (ShadesException e) {
+            System.out.println("Cause: " + e);
+        }
 
     }
 }
