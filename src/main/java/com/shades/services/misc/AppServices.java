@@ -8,6 +8,11 @@ import com.shades.exceptions.ShadesException;
 import com.shades.services.az.AzProcess;
 import com.shades.utilities.ParseAmzOrder;
 import org.apache.log4j.Logger;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,9 +20,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
 
 @Transactional
 @Service
@@ -32,23 +38,24 @@ public class AppServices {
         return inventoryDao.getAllProductsSet();
     }
 
-    public boolean processNewSingleOrder(OrderEntity order, String seller) throws ShadesException{
+    public boolean processNewSingleOrder(OrderEntity order) throws ShadesException{
 
-        int sellerId = inventoryDao.getSellerId(seller);
-
-        //InventoryEntity product = inventoryDao.findProductDetails(order.getSku());
-        //processProductDetails(order, product);
-
-        int nextOrderId = inventoryDao.getNextOrderId();
-        order.setOrderId(nextOrderId);
-        order.setSellerId(sellerId);
-        //order.setSupplierId(product.getSupplierId());
+        System.out.println(order);
+        if(order.getOrderId() == 0){
+            int nextOrderId = inventoryDao.getNextOrderId();
+            order.setOrderId(nextOrderId);
+            order.setSellerId(getSellerId());
+        }
 
         inventoryDao.placeNewOrder(order);
-
         logger.info("New Order: " + order);
-        //logger.info("Product Information:" + product);
         return false;
+    }
+
+    private int getSellerId() throws ShadesException {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userName = userDetails.getUsername();
+        return inventoryDao.getSellerId(userName);
     }
 
     //TODO: TRY TO FIX THIS METHOD. NOTE THAT THE FRAG API MIGHT NOT BE STABLE
@@ -89,9 +96,7 @@ public class AppServices {
 
     public Set<OrderEntity> processExpressOrder(File amzOrders) throws ShadesException {
 
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userName = userDetails.getUsername();
-        int sellerId = inventoryDao.getSellerId(userName);
+        int sellerId = getSellerId();
         int orderId = inventoryDao.getNextOrderId();
 
         ParseAmzOrder parseFile = new ParseAmzOrder();
@@ -109,14 +114,73 @@ public class AppServices {
     }
 
     public List<OrderEntity> getSellerPendingOrders() throws ShadesException {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userName = userDetails.getUsername();
-        int sellerId = inventoryDao.getSellerId(userName);
-        List<OrderEntity> sellerOrders = inventoryDao.getPendingOrdersBySeller(sellerId);
+        List<OrderEntity> sellerOrders = inventoryDao.getPendingOrdersBySeller(getSellerId());
+        return sellerOrders;
+    }
+
+    public List<OrderEntity> getSellerCompletedOrders() throws ShadesException{
+        List<OrderEntity> sellerOrders = inventoryDao.getCompletedOrdersBySeller(getSellerId());
         return sellerOrders;
     }
 
     public OrderEntity getOrderById(int id) {
         return inventoryDao.getOrderById(id);
+    }
+
+
+    public List<OrderEntity> getAllNewOrders() {
+        return inventoryDao.getAllNewOrders();
+    }
+
+    public void stageOrders(String[] orderToStage) {
+        inventoryDao.updateOrder("processed","1", orderToStage);
+    }
+
+    public List<OrderEntity> getStagedOrders() {
+        return inventoryDao.getStagedOrders();
+    }
+
+    public void updateTrackingIds(File orders) {
+
+        List<OrderEntity> orderList = new ArrayList<>();
+
+        try {
+            FileInputStream fileInputStream = new FileInputStream(orders);
+            Workbook workbook = new XSSFWorkbook(fileInputStream);
+            Sheet sheet = workbook.getSheetAt(0);
+            Iterator<Row> iterator = sheet.iterator();
+            iterator.next(); //head row
+
+            while (iterator.hasNext())
+            {
+                Row currentRow = iterator.next();
+                Iterator<Cell> cellIterator = currentRow.iterator();
+                OrderEntity order = new OrderEntity();
+                while (cellIterator.hasNext())
+                {
+                    Cell currentCell = cellIterator.next();
+                    int cell = currentCell.getColumnIndex();
+                    switch (cell)
+                    {
+                        case 0:
+                            order.setOrderId((int)currentCell.getNumericCellValue());
+                            break;
+                        case 11:
+                            order.setTrackingId(currentCell.getStringCellValue());
+                            break;
+                        case 12:
+                            order.setShippingCost(currentCell.getNumericCellValue());
+                        default:
+                            break;
+                    }
+                }
+                orderList.add(order);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        inventoryDao.updateTrackingInfo(orderList);
     }
 }

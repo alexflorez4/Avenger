@@ -5,15 +5,11 @@ import Entities.OrderEntity;
 import Entities.SellerEntity;
 import com.shades.exceptions.ShadesException;
 import org.apache.log4j.Logger;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.TransactionSystemException;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Repository
 public class InventoryDaoImpl implements InventoryDao {
@@ -23,16 +19,16 @@ public class InventoryDaoImpl implements InventoryDao {
     @PersistenceContext
     private EntityManager em;
 
-    public void updateInventory(Set<InventoryEntity> inventorySet) {
+    public void updateInventory(List<InventoryEntity> itemsList) {
 
-        logger.info("DAO: Updating inventory");
+        logger.info("Updating inventory. " + itemsList.size() + " items changed.");
 
         Query query = em.createNativeQuery("" +
-                "INSERT IGNORE INTO aws_db_shades1.Inventory(sku, supplierId, quantity, supplierProductId, supplierPrice, shadesSellingPrice, weight, shippingCost, lastUpdate)" +
-                "VALUES (?,?,?,?,?,?,?,?,?)" +
-                "ON DUPLICATE KEY UPDATE quantity = ?, supplierPrice = ?, shadesSellingPrice = ?, lastUpdate = ?");
+                "INSERT IGNORE INTO aws_db_shades1.Inventory(sku, supplierId, quantity, supplierProductId, supplierPrice, shadesSellingPrice, weight, shippingCost, lastUpdate, status)" +
+                "VALUES (?,?,?,?,?,?,?,?,?,?)" +
+                "ON DUPLICATE KEY UPDATE quantity = ?, supplierPrice = ?, shadesSellingPrice = ?, lastUpdate = ?, status = ?");
 
-            inventorySet.stream().forEach((entity) -> {
+            itemsList.stream().forEach((entity) -> {
                 query.setParameter(1, entity.getSku());
                 query.setParameter(2, entity.getSupplierId());
                 query.setParameter(3, entity.getQuantity());
@@ -42,13 +38,16 @@ public class InventoryDaoImpl implements InventoryDao {
                 query.setParameter(7, entity.getWeight());
                 query.setParameter(8, entity.getShippingCost());
                 query.setParameter(9, new Timestamp(System.currentTimeMillis()));
+                query.setParameter(10, entity.getStatus());
 
-                query.setParameter(10, entity.getQuantity());
-                query.setParameter(11, entity.getSupplierPrice());
-                query.setParameter(12, entity.getShadesSellingPrice());
-                query.setParameter(13, entity.getLastUpdate());
+                query.setParameter(11, entity.getQuantity());
+                query.setParameter(12, entity.getSupplierPrice());
+                query.setParameter(13, entity.getShadesSellingPrice());
+                query.setParameter(14, entity.getLastUpdate());
+                query.setParameter(15, entity.getStatus());
 
                 query.executeUpdate();
+                System.out.println(entity.getSku() + " - " + entity.getStatus());
             }
         );
     }
@@ -82,11 +81,13 @@ public class InventoryDaoImpl implements InventoryDao {
 
         InventoryEntity item = findProductDetails(order.getSku());
 
-        Query q =  em.createNativeQuery("INSERT IGNORE INTO aws_db_shades1.Order (" +
+        Query q =  em.createNativeQuery("INSERT IGNORE INTO Orders (" +
                 "orderId, orderDate, sellerId, marketId, supplierId, marketOrderId, sku, marketListingId, asin, " +
                 "quantity, buyerName, street, street2, city, state, other, zipCode, country, supplierPrice,\n" +
                 "shadesPrice, shippingCost, totalPriceShades, marketSoldAmount, currency, observations)" +
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) " +
+                "ON DUPLICATE KEY UPDATE orderDate = ?, quantity = ?, buyerName = ? , street = ?, street2=?, " +
+                "city = ?, state = ?, other = ?, zipCode = ?, country = ?, totalPriceShades = ?, observations = ?");
 
         q.setParameter(1, order.getOrderId());
         q.setParameter(2, new Timestamp(System.currentTimeMillis()));
@@ -109,10 +110,24 @@ public class InventoryDaoImpl implements InventoryDao {
         q.setParameter(19, item.getSupplierPrice()); //Supplier price
         q.setParameter(20, item.getShadesSellingPrice()); //Shades price
         q.setParameter(21, item.getShippingCost()); //Shipping cost
-        q.setParameter(22, item.getShadesSellingPrice() + item.getShippingCost()); //Total Price Shades
+        q.setParameter(22, (item.getShadesSellingPrice() * item.getQuantity()) + item.getShippingCost()); //Total Price Shades
         q.setParameter(23, order.getMarketSoldAmount());
         q.setParameter(24, order.getCurrency());
         q.setParameter(25, order.getObservations());
+
+        q.setParameter(26, new Timestamp(System.currentTimeMillis()));
+        q.setParameter(27, order.getQuantity());
+        q.setParameter(28, order.getBuyerName());
+        q.setParameter(29, order.getStreet());
+        q.setParameter(30, order.getStreet2());
+        q.setParameter(31, order.getCity());
+        q.setParameter(32, order.getState());
+        q.setParameter(33, order.getOther());
+        q.setParameter(34, order.getZipCode());
+        q.setParameter(35, order.getCountry());
+        q.setParameter(36, (item.getShadesSellingPrice() * item.getQuantity()) + item.getShippingCost()); //Total Price Shades
+        q.setParameter(37, order.getObservations());
+
         q.executeUpdate();
     }
 
@@ -133,7 +148,7 @@ public class InventoryDaoImpl implements InventoryDao {
     @Override
     public int getNextOrderId() throws ShadesException {
         try {
-            Query q = em.createNativeQuery("SELECT max(orderId) from `Order`;");
+            Query q = em.createNativeQuery("SELECT max(orderId) from Orders;");
             int lastOrder = (int) q.getSingleResult();
             return lastOrder +1;
         }catch (NoResultException nre){
@@ -151,16 +166,63 @@ public class InventoryDaoImpl implements InventoryDao {
 
     @Override
     public List<OrderEntity> getPendingOrdersBySeller(int sellerId) {
-        Query q = em.createNativeQuery("SELECT * FROM `Order` WHERE sellerId = ?", OrderEntity.class);
+        Query q = em.createNativeQuery("SELECT * FROM Orders WHERE sellerId = ? AND trackingId IS NULL", OrderEntity.class);
         q.setParameter(1, sellerId);
         List<OrderEntity> orders = q.getResultList();
         return orders;
     }
 
     @Override
-    public OrderEntity getOrderById(int orderId) {
-        Query q = em.createNativeQuery("SELECT * FROM `Order` WHERE  orderId = ?", OrderEntity.class);
+    public List<OrderEntity> getCompletedOrdersBySeller(int sellerId) {
+        Query q = em.createNativeQuery("SELECT * FROM Orders WHERE sellerId = ? AND trackingId IS NOT NULL", OrderEntity.class);
+        q.setParameter(1, sellerId);
+        List<OrderEntity> orders = q.getResultList();
+        return orders;
+    }
+
+    @Override
+    public OrderEntity getOrderById(int orderId){
+        Query q = em.createNativeQuery("SELECT * FROM Orders WHERE  orderId = ?", OrderEntity.class);
         q.setParameter(1, orderId);
         return (OrderEntity) q.getSingleResult();
+    }
+
+    @Override
+    public List<OrderEntity> getAllNewOrders() {
+        Query q = em.createNativeQuery("SELECT * FROM Orders WHERE trackingId IS NULL AND processed = 0", OrderEntity.class);
+        List<OrderEntity> orders = q.getResultList();
+        return orders;
+    }
+
+    @Override
+    public void updateOrder(String field, String value, String[] orderIds) {
+        Query q = em.createNativeQuery("UPDATE Orders SET " + field + "=" + value + " WHERE orderId = ?", OrderEntity.class);
+
+        for(String orderId: orderIds){
+            q.setParameter(1, orderId);
+            q.executeUpdate();
+        }
+    }
+
+    @Override
+    public List<OrderEntity> getStagedOrders() {
+        Query q = em.createNativeQuery("SELECT * FROM Orders WHERE trackingId IS NULL AND processed = 1", OrderEntity.class);
+        List<OrderEntity> orders = q.getResultList();
+        return orders;
+    }
+
+    @Override
+    public void updateTrackingInfo(List<OrderEntity> orderList) {
+
+        Query q = em.createNativeQuery("UPDATE Orders SET shippingCost = ?, trackingId = ?, totalPriceShades = ? WHERE orderId = ?", OrderEntity.class);
+
+        for(OrderEntity order: orderList){
+            OrderEntity temp = getOrderById(order.getOrderId());
+            q.setParameter(1, order.getShippingCost());
+            q.setParameter(2, order.getTrackingId());
+            q.setParameter(3, temp.getShadesPrice() + order.getShippingCost());
+            q.setParameter(4, order.getOrderId());
+            q.executeUpdate();
+        }
     }
 }

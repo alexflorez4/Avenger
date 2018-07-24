@@ -11,7 +11,7 @@ import java.util.Set;
 
 public interface InventoryDao {
 
-    void updateInventory(Set<InventoryEntity> inventorySet);
+    void updateInventory(List<InventoryEntity> inventorySet);
 
     List<String> getAllProductsSet();
 
@@ -28,4 +28,14 @@ public interface InventoryDao {
     List<OrderEntity> getPendingOrdersBySeller(int sellerId);
 
     OrderEntity getOrderById(int orderId);
+
+    List<OrderEntity> getCompletedOrdersBySeller(int sellerId);
+
+    List<OrderEntity> getAllNewOrders();
+
+    void updateOrder(String field, String value, String[] orderIds);
+
+    List<OrderEntity> getStagedOrders();
+
+    void updateTrackingInfo(List<OrderEntity> orderList);
 }

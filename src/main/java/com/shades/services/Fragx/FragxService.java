@@ -3,9 +3,8 @@ package com.shades.services.fragx;
 import Entities.InventoryEntity;
 import com.shades.controller.InventoryController;
 import com.shades.dao.InventoryDao;
-import com.shades.services.fragx.Exceptions.BadAccessIdOrKeyException;
-import com.shades.services.fragx.Exceptions.BadItemIdException;
-import com.shades.services.fragx.Exceptions.HttpErrorException;
+import com.shades.exceptions.ShadesException;
+import com.shades.services.fragx.Exceptions.*;
 import com.shades.services.fragx.Models.Product;
 import com.shades.utilities.Utils;
 import org.apache.log4j.Logger;
@@ -13,12 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.function.Predicate;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -34,56 +30,44 @@ public class FragxService {
     @Autowired
     private InventoryDao inventoryDao;
 
-    public void updateInventory() {
-
-        Set<InventoryEntity> inventorySet = new HashSet<>();
+    public void updateInventory() throws ShadesException {
 
         try {
 
-            List<InventoryEntity> oldList = inventoryDao.getProductsBySupplier(501);
+            List<InventoryEntity> currentProductList = inventoryDao.getProductsBySupplier(501);
 
             FrgxListingApiClient client = new FrgxListingApiClient(apiId, apiKey);
-            List<Product> newList = client.getAllProductList();
+            List<Product> newProductList = client.getAllProductList();
 
-            //Out of Stock Inventory
-            Predicate<InventoryEntity> predicate = inventoryEntity -> newList.stream().noneMatch(s -> s.getItemId().equalsIgnoreCase(inventoryEntity.getSku()));
-            Set<InventoryEntity> outOfStockItems = oldList.stream().filter(predicate).collect(Collectors.toSet());
-            outOfStockItems.stream().forEach(inventoryEntity -> inventoryEntity.setQuantity(0));
-            inventoryDao.updateInventory(outOfStockItems);
-            logger.info("Out of Stock items: " + outOfStockItems.size());
-
-            //New Inventory
-            Predicate<Product> predicate2 = new Predicate<Product>() {
-                @Override
-                public boolean test(Product product) {
-                    return oldList.stream().noneMatch(s -> s.getSku().equalsIgnoreCase(product.getItemId()));
-                }
+            //Mapping Product -> InventoryEntity
+            Function<Product, InventoryEntity> transProdFunction = product -> {
+                InventoryEntity inventory = new InventoryEntity(
+                        product.getItemId(),
+                        product.isInstock() ? 10 : 0,
+                        501,
+                        product.getWholesalePriceUSD(),
+                        Utils.shadesPrices(product.getWholesalePriceUSD()),
+                        5.0,
+                        null,
+                        new Timestamp(System.currentTimeMillis()),
+                        0.0,
+                        null);
+                return inventory;
             };
-            List<Product> newItems = newList.stream().filter(predicate2).collect(Collectors.toList());
-            logger.info("New items: " + newItems.size());
 
-            //TODO: FIX THIS LAMBDA EXPRESSION, USE FUNCTIONAL - COLLECT
-            newItems.stream().forEach(s -> {
-                InventoryEntity inventoryEntity = new InventoryEntity();
-                inventoryEntity.setSku(s.getItemId());
-                inventoryEntity.setSupplierId(501);
-                inventoryEntity.setQuantity(s.isInstock() ? 10 : 0);
-                inventoryEntity.setSupplierProductId(s.getParentCode());
-                inventoryEntity.setSupplierPrice(s.getWholesalePriceUSD());
-                inventoryEntity.setShadesSellingPrice(Utils.shadesPrices(s.getWholesalePriceUSD()));
-                inventoryEntity.setShippingCost(5.00);
-                inventoryEntity.setLastUpdate(new Timestamp(System.currentTimeMillis()));
-                inventorySet.add(inventoryEntity);
-            });
+            List<InventoryEntity> newProductsList = newProductList.stream().map(transProdFunction).collect(Collectors.toList());
+            List<InventoryEntity> itemsChanged = Utils.getDifferentItems(currentProductList, newProductsList);
+            inventoryDao.updateInventory(itemsChanged);
 
         } catch (Exception e) {
-            //TODO: CATCH THIS EXCEPTION BETTER
-            e.printStackTrace();
+            if(e instanceof BadAccessIdOrKeyException || e instanceof BadItemIdException || e instanceof EmptyOrderException
+                    || e instanceof HttpErrorException || e instanceof NullResponseException){
+                throw new ShadesException("Error with Fragrance X. Exception: " + e.getClass().getName());
+            }else {
+                throw new ShadesException("Error. " + e.getMessage());
+            }
         }
-        inventoryDao.updateInventory(inventorySet);
     }
-
-
 
     public void setApiId(String apiId) {
         this.apiId = apiId;
@@ -91,24 +75,5 @@ public class FragxService {
 
     public void setApiKey(String apiKey) {
         this.apiKey = apiKey;
-    }
-
-    public Product getProductDetails(InventoryEntity product){
-
-        Product productInfo = null;
-        try {
-            FrgxListingApiClient client = new FrgxListingApiClient(apiId, apiKey);
-            productInfo = client.getProductById(product.getSku());
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (BadAccessIdOrKeyException e) {
-            e.printStackTrace();
-        } catch (HttpErrorException e) {
-            e.printStackTrace();
-        } catch (BadItemIdException e) {
-            e.printStackTrace();
-        }
-
-        return productInfo;
     }
 }

@@ -50,7 +50,7 @@
                         <a href="<%=request.getContextPath()%>/myPendingOrders.do">Pending</a>
                     </li>
                     <li>
-                        <a href="#">Completed</a>
+                        <a href="<%=request.getContextPath()%>/myCompletedOrders.do">Completed</a>
                     </li>
                 </ul>
             </li>
@@ -70,7 +70,18 @@
                             <a href="<%=request.getContextPath()%>/pages/inventoryUpdate.jsp">Inventory</a>
                         </li>
                         <li>
-                            <a href="#">Orders</a>
+                            <a class="nav-link-collapse collapsed" data-toggle="collapse" href="#collapseMultiOrders">Orders</a>
+                            <ul class="sidenav-third-level collapse" id="collapseMultiOrders">
+                                <li>
+                                    <a href="<%=request.getContextPath()%>/allNewOrdersAdmin.do">New</a>
+                                </li>
+                                <li>
+                                    <a href="<%=request.getContextPath()%>/stagedOrdersAdmin.do">Staging</a>
+                                </li>
+                                <li>
+                                    <a href="#">Completed</a>
+                                </li>
+                            </ul>
                         </li>
                         <li>
                             <a href="#">Invoices</a>

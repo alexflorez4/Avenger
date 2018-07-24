@@ -17,10 +17,32 @@
 
 <div class="content-wrapper">
     <div class="container-fluid">
-        <h1>Pending Orders</h1>
+        <h1>Staged Orders</h1>
         <hr>
 
         <div class="panel-body">
+
+            <div class="row">
+                <div class="col-lg-12 bottom-buffer">
+
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <i class="fa fa-table"></i> Tracking Upload </div>
+                            <div class="card-body">
+                                <form class="form-inline" method="POST" action="uploadTrackingIds.do" enctype="multipart/form-data">
+                                    <div class="form-group mx-sm-3 mb-2">
+                                        <input type="file" class="form-control" id="ordersFile" name="ordersFile">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary mb-2">Submit</button>
+                                </form>
+                            </div>
+                        <div class="card-footer small text-muted">Be Happy ;)</div>
+                    </div>
+
+                </div>
+
+            </div>
+
             <div class="row">
                 <div class="col-lg-12 bottom-buffer">
 
@@ -29,27 +51,27 @@
                             <i class="fa fa-table"></i> Orders </div>
                         <div class="card-body">
                             <div class="table-responsive">
-
-                                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                                    <thead>
-                                    <tr>
-                                        <th>No</th>
-                                        <th>Market Order id</th>
-                                        <th>SKU</th>
-                                        <th>Quantity</th>
-                                        <th>Buyer Name</th>
-                                        <th>Street</th>
-                                        <th>Street2/Apt</th>
-                                        <th>City</th>
-                                        <th>State</th>
-                                        <th>Zip Code</th>
-                                        <th>Other</th>
-                                        <th>Country</th>
-                                        <th>Observations</th>
-                                        <th>Edit</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
+                                <form role="form" method="post" action="<%=request.getContextPath()%>/downloadStagedOrder.do" id="orderForm">
+                                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                        <thead>
+                                        <tr>
+                                            <th>No</th>
+                                            <th>Market Order id</th>
+                                            <th>SKU</th>
+                                            <th>Quantity</th>
+                                            <th>Buyer Name</th>
+                                            <th>Street</th>
+                                            <th>Street2/Apt</th>
+                                            <th>City</th>
+                                            <th>State</th>
+                                            <th>Zip Code</th>
+                                            <th>Other</th>
+                                            <th>Country</th>
+                                            <th>Observations</th>
+                                            
+                                        </tr>
+                                        </thead>
+                                        <tbody>
                                         <c:forEach items="${orders}" var="order">
                                             <tr>
                                                 <td>${order.orderId}</td>
@@ -65,11 +87,12 @@
                                                 <td>${order.other}</td>
                                                 <td>${order.country}</td>
                                                 <td>${order.observations}</td>
-                                                <th><a href="<%=request.getContextPath()%>/editOrder/${order.orderId}">Edit</a> </th>
                                             </tr>
                                         </c:forEach>
-                                    </tbody>
-                                </table>
+                                        </tbody>
+                                    </table>
+                                    <button type="submit" class="btn btn-primary mb-2 float-right" name="submit">Download</button>
+                                </form>
                             </div>
                         </div>
                         <div class="card-footer small text-muted">Be Happy ;)</div>

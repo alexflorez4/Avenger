@@ -3,6 +3,7 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib uri = "http://java.sun.com/jsp/jstl/functions" prefix = "fn" %>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -24,13 +25,25 @@
             <li class="breadcrumb-item active">Enter Order Details</li>
         </ol>
 
+        <c:if test="${status == 'success'}">
+            <div class="alert alert-success">
+                Order completed successfully!
+            </div>
+        </c:if>
+        <c:if test="${fn:contains(status, 'Error')}">
+            <div class="alert alert-danger">
+                    ${status}
+            </div>
+        </c:if>
+
         <div class="panel-body">
             <div class="row">
                 <div class="col-lg-5 bottom-buffer">
 
                     <form role="form" method="post" action="singleOrder.do" id="orderForm">
 
-                        <input type="hidden" name="seller" value="<sec:authentication property='principal.username'/>">
+                        <%--<input type="hidden" name="seller" value="<sec:authentication property='principal.username'/>">--%>
+                        <input type="hidden" name="orderNo" value="0">
 
                         <div class="form-group row">
                             <label for="reference" class="col-sm-4 col-form-label">Item</label>

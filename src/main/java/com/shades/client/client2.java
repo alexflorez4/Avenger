@@ -25,6 +25,6 @@ public class client2 {
         OrderEntity orderEntity = new OrderEntity();
         orderEntity.setSku("400028");
         orderEntity.setQuantity(2);
-        service.processNewSingleOrder(orderEntity, "welse");
+        service.processNewSingleOrder(orderEntity);
     }
 }

@@ -5,7 +5,7 @@ import java.sql.Timestamp;
 
 
 @Entity
-@Table(name = "Order", schema = "aws_db_shades1")
+@Table(name = "Orders", schema = "aws_db_shades1")
 public class OrderEntity {
     private int orderId;
     private Timestamp orderDate;
@@ -34,6 +34,7 @@ public class OrderEntity {
     private Double marketSoldAmount;
     private String currency;
     private String observations;
+    private int processed;
 
     public OrderEntity() {
     }
@@ -306,6 +307,16 @@ public class OrderEntity {
 
     public void setObservations(String observations) {
         this.observations = observations;
+    }
+
+    @Basic
+    @Column(name = "processed")
+    public int getProcessed() {
+        return processed;
+    }
+
+    public void setProcessed(int proccessed) {
+        this.processed = proccessed;
     }
 
     @Override

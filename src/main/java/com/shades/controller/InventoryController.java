@@ -5,11 +5,9 @@ import com.shades.exceptions.ShadesException;
 import com.shades.services.az.AzProcess;
 import com.shades.services.fragx.FragxService;
 import com.shades.services.misc.AppServices;
+import com.shades.views.StagedOrdersExcel;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,9 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.*;
-import java.security.Principal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -51,14 +47,12 @@ public class InventoryController {
         return "index";
     }
 
-    @RequestMapping(value = "/pages/processAZImportFile", method = RequestMethod.POST)
+    @RequestMapping(value = "/pages/inventoryUpdate", method = RequestMethod.POST)
     public ModelAndView processAZInventoryUpdate(@RequestParam("azFile") MultipartFile file, @RequestParam("supplier") int supplierId){
 
-        logger.info("Controller accessed.");
         String rootPath = System.getProperty("catalina.home");
-        logger.info("System property, catalina.home: " + rootPath);
-
         File dir = new File(rootPath + File.separator + "uploads");
+        String status;
 
         if(!dir.exists())
             dir.mkdirs();
@@ -69,18 +63,13 @@ public class InventoryController {
             byte[] bytes = file.getBytes();
             stream.write(bytes);
             stream.close();
-            logger.info("Server File Location: "  + serverFile.getAbsolutePath());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try {
             azProcess.updateInventory(serverFile, supplierId);
         } catch (Exception e) {
-            logger.error("Exception thrown " + e.getMessage());
-            e.printStackTrace();
+            status = "Error. " + e;
+            return new ModelAndView("inventoryUpdate", "status", status);
         }
-        String status = "success";
+
+        status = "success";
         return new ModelAndView("inventoryUpdate", "status", status);
     }
 
@@ -108,8 +97,9 @@ public class InventoryController {
     }
 
 
-    @RequestMapping("/singleOrder")
+    @RequestMapping(value = "/singleOrder", method = RequestMethod.POST)
     public ModelAndView newSingleOrder(
+            @RequestParam("orderNo") Integer orderNo,
             @RequestParam("reference") String reference,
             @RequestParam("itemQuantity") Integer quantity,
             @RequestParam("bName") String buyerName,
@@ -120,10 +110,10 @@ public class InventoryController {
             @RequestParam("bZip") String zipCode,
             @RequestParam("bCountry") String country,
             @RequestParam("bNotes") String notes,
-            @RequestParam("market") Integer marketId,
-            @RequestParam("seller") String sellerName){
+            @RequestParam("market") Integer marketId){
 
         OrderEntity order = new OrderEntity();
+        order.setOrderId(orderNo);
         order.setSku(reference);
         order.setQuantity(quantity);
         order.setBuyerName(buyerName);
@@ -136,15 +126,16 @@ public class InventoryController {
         order.setObservations(notes);
         order.setMarketId(marketId);
 
+        String status;
         try {
-            appServices.processNewSingleOrder(order, sellerName);
+            appServices.processNewSingleOrder(order);
 
-        } catch (Exception e) { //// TODO: 6/19/2018 Handle errors
-            logger.info("Transaction failed");
-            return new ModelAndView("placeholder");
+        } catch (ShadesException e) {
+            status = "Error." + e;
+            return new ModelAndView("orderManual", "status", status);
         }
-
-        return new ModelAndView("index", "", null);
+        status = "success";
+        return new ModelAndView("orderManual", "status", status);
     }
 
     @RequestMapping("/express")
@@ -156,6 +147,30 @@ public class InventoryController {
     public ModelAndView displayMyPendingOrders() throws ShadesException {
         List<OrderEntity> pendingOrders = appServices.getSellerPendingOrders();
         return new ModelAndView("pendingOrders", "orders", pendingOrders);
+    }
+
+    @RequestMapping("/myCompletedOrders")
+    public ModelAndView displayMyCompletedOrders() throws ShadesException {
+        List<OrderEntity> completedOrders = appServices.getSellerCompletedOrders();
+        return new ModelAndView("completedOrders", "orders", completedOrders);
+    }
+
+    @RequestMapping("/allNewOrdersAdmin")
+    public ModelAndView displayAllNewOrders() throws ShadesException {
+        List<OrderEntity> orders = appServices.getAllNewOrders();
+        return new ModelAndView("newOrdersAdmin", "orders", orders);
+    }
+
+    @RequestMapping("/stagedOrdersAdmin")
+    public ModelAndView displayStagedOrders() throws ShadesException {
+        List<OrderEntity> orders = appServices.getStagedOrders();
+        return new ModelAndView("stagedOrdersAdmin", "orders", orders);
+    }
+
+    @RequestMapping("/downloadStagedOrder")
+    public ModelAndView downloadStagedOrders() throws ShadesException {
+        List<OrderEntity> orders = appServices.getStagedOrders();
+        return new ModelAndView(new StagedOrdersExcel(), "orders", orders);
     }
 
     @RequestMapping(value = "/processExpress", method = RequestMethod.POST)
@@ -189,11 +204,50 @@ public class InventoryController {
         return new ModelAndView("express", "failingOrdersSet", failingOrders);
     }
 
-    @RequestMapping("/viewOrder/{id}")
-    public ModelAndView viewSingleOrder(@PathVariable int id){
-        System.out.println("Order id: " + id);
-        OrderEntity order = appServices.getOrderById(id);
-        return new ModelAndView("viewOrder", "order", order);
+    @RequestMapping(value = "/uploadTrackingIds", method = RequestMethod.POST)
+    public ModelAndView trackingUpload(@RequestParam("ordersFile") MultipartFile file){
+
+        String rootPath = System.getProperty("catalina.home");
+        File dir = new File(rootPath + File.separator + "uploads");
+
+        if(!dir.exists())
+            dir.mkdirs();
+
+        File serverFile = new File(dir.getAbsolutePath() + File.separator + file);
+
+        try {
+            BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(serverFile));
+            byte[] bytes = file.getBytes();
+            stream.write(bytes);
+            stream.close();
+            appServices.updateTrackingIds(serverFile);
+        } catch (FileNotFoundException e) {
+
+        } catch (IOException e) {
+
+        }
+        List<OrderEntity> orders = appServices.getStagedOrders();
+        return new ModelAndView("stagedOrdersAdmin", "orders", orders);
     }
+
+    @RequestMapping("/stageOrder")
+    public ModelAndView stageOrder(@RequestParam("orderToStage") String [] orderToStage){
+        System.out.println("**" + orderToStage);
+        for(String temp : orderToStage){
+            System.out.println(temp);
+        }
+        appServices.stageOrders(orderToStage);
+        List<OrderEntity> orders = appServices.getAllNewOrders();
+        return new ModelAndView("newOrdersAdmin", "orders", orders);
+    }
+
+    @RequestMapping(value = "/editOrder/{id}", method = RequestMethod.GET)
+    public ModelAndView viewSingleOrder(@PathVariable String id){
+        System.out.println("Order id: " + id);
+        OrderEntity order = appServices.getOrderById(Integer.valueOf(id));
+        return new ModelAndView("editOrder", "order", order);
+    }
+
+
 
 }

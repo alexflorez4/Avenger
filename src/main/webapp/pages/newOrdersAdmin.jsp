@@ -29,29 +29,31 @@
                             <i class="fa fa-table"></i> Orders </div>
                         <div class="card-body">
                             <div class="table-responsive">
-
-                                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                                    <thead>
-                                    <tr>
-                                        <th>No</th>
-                                        <th>Market Order id</th>
-                                        <th>SKU</th>
-                                        <th>Quantity</th>
-                                        <th>Buyer Name</th>
-                                        <th>Street</th>
-                                        <th>Street2/Apt</th>
-                                        <th>City</th>
-                                        <th>State</th>
-                                        <th>Zip Code</th>
-                                        <th>Other</th>
-                                        <th>Country</th>
-                                        <th>Observations</th>
-                                        <th>Edit</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
+                                <form role="form" method="post" action="<%=request.getContextPath()%>/stageOrder.do" id="orderForm">
+                                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                        <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>No</th>
+                                            <th>Market Order id</th>
+                                            <th>SKU</th>
+                                            <th>Quantity</th>
+                                            <th>Buyer Name</th>
+                                            <th>Street</th>
+                                            <th>Street2/Apt</th>
+                                            <th>City</th>
+                                            <th>State</th>
+                                            <th>Zip Code</th>
+                                            <th>Other</th>
+                                            <th>Country</th>
+                                            <th>Observations</th>
+                                            
+                                        </tr>
+                                        </thead>
+                                        <tbody>
                                         <c:forEach items="${orders}" var="order">
                                             <tr>
+                                                <th><input type="checkbox" name="orderToStage" value="${order.orderId}"></th>
                                                 <td>${order.orderId}</td>
                                                 <td>${order.marketOrderId}</td>
                                                 <td>${order.sku}</td>
@@ -65,11 +67,12 @@
                                                 <td>${order.other}</td>
                                                 <td>${order.country}</td>
                                                 <td>${order.observations}</td>
-                                                <th><a href="<%=request.getContextPath()%>/editOrder/${order.orderId}">Edit</a> </th>
                                             </tr>
                                         </c:forEach>
-                                    </tbody>
-                                </table>
+                                        </tbody>
+                                    </table>
+                                    <button type="submit" class="btn btn-primary mb-2 float-right" name="submit">Stage</button>
+                                </form>
                             </div>
                         </div>
                         <div class="card-footer small text-muted">Be Happy ;)</div>

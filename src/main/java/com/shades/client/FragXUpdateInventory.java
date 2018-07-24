@@ -22,6 +22,5 @@ public class FragXUpdateInventory {
         } catch (ShadesException e) {
             System.out.println("Cause: " + e);
         }
-
     }
 }

@@ -19,7 +19,7 @@
                 <hr>
                 <!-- Breadcrumbs-->
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item active">AZ importer Inventory File Upload</li>
+                    <li class="breadcrumb-item active">Inventory File Upload</li>
                 </ol>
 
                 <c:if test="${status == 'success'}">
@@ -27,24 +27,33 @@
                         Inventory Updated Successfully!
                     </div>
                 </c:if>
+                <c:if test="${fn:contains(status, 'Error')}">
+                    <div class="alert alert-danger">
+                            ${status}
+                    </div>
+                </c:if>
 
                 <div style="font-size: small"> <p>Item Sku - Wholesale Price - Quantity - Weight Per Unit</p></div>
-                <%--<p>Item Sku - Wholesale Price - Quantity - Weight Per Unit</p>--%>
 
-                <form class="form-inline" method="POST" action="processAZImportFile.do" enctype="multipart/form-data">
-                    <div class="form-group mx-sm-3 mb-2">
-                        <input type="file" class="form-control" id="azFile" name="azFile">
+                <form method="POST" action="inventoryUpdate.do" enctype="multipart/form-data">
+                    <div class="form-group row">
+                        <label for="azFile" class="col-sm-1 col-form-label">File</label>
+                        <div class="col-sm-3">
+                            <input type="file" class="form-control" id="azFile" name="azFile">
+                        </div>
                     </div>
-                    <div class="form-group mx-sm-3 mb-2">
-                        <label for="supplier" class="col-sm-4 col-form-label">Market</label>
-                        <div class="col-sm-8">
+                    <div class="form-group row">
+                        <label for="supplier" class="col-sm-1 col-form-label">Supplier</label>
+                        <div class="col-sm-3">
                             <select class="form-control" id="supplier" name="supplier">
                                 <option selected value="500">AZ Trading</option>
                                 <option value="599">Shades</option>
                             </select>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary mb-2">Submit</button>
+                    <div class="container-fluid form-group row">
+                        <button type="submit" class=" btn btn-primary">Update</button>
+                    </div>
                 </form>
             </div>
             <div class="container-fluid">

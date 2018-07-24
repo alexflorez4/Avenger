@@ -30,11 +30,11 @@ public class AzProcess {
     @Autowired
     private InventoryDao inventoryDao;
 
-    public boolean updateInventory(File inventoryFile) {
+    public boolean updateInventory(File inventoryFile, int supplierId) {
 
         logger.info("Updating inventory");
 
-        Set<InventoryEntity> inventoryList = new HashSet<>();
+        List<InventoryEntity> newProductsList = new ArrayList<>();
         FileInputStream fileInputStream = null;
         Workbook workbook = null;
         try {
@@ -97,14 +97,15 @@ public class AzProcess {
                     default:
                         break;
                 }
-                azInventory.setSupplierId(500);
+
+                azInventory.setSupplierId(supplierId);
                 azInventory.setLastUpdate(new Timestamp(System.currentTimeMillis()));
-                inventoryList.add(azInventory);
+                newProductsList.add(azInventory);
             }
         }
-
-        inventoryDao.updateInventory(inventoryList);
-
+        List<InventoryEntity> currentProductsList = inventoryDao.getProductsBySupplier(supplierId);
+        List<InventoryEntity> itemsChanged = Utils.getDifferentItems(currentProductsList, newProductsList);
+        inventoryDao.updateInventory(itemsChanged);
         return true;
     }
 }

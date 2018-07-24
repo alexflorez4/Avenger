@@ -35,7 +35,7 @@ public class client {
         OrderEntity oe = new OrderEntity();
         oe.setSku("400015");
         try {
-            appServices.processNewSingleOrder(oe, "welse");
+            appServices.processNewSingleOrder(oe);
         } catch (ShadesException e) {
             e.printStackTrace();
         }

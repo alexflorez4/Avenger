@@ -35,6 +35,7 @@
                                     <tr>
                                         <th>No</th>
                                         <th>Market Order id</th>
+                                        <th>Tracking</th>
                                         <th>SKU</th>
                                         <th>Quantity</th>
                                         <th>Buyer Name</th>
@@ -46,7 +47,6 @@
                                         <th>Other</th>
                                         <th>Country</th>
                                         <th>Observations</th>
-                                        <th>Edit</th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -54,6 +54,7 @@
                                             <tr>
                                                 <td>${order.orderId}</td>
                                                 <td>${order.marketOrderId}</td>
+                                                <th>${order.trackingId}</th>
                                                 <td>${order.sku}</td>
                                                 <td>${order.quantity}</td>
                                                 <td>${order.buyerName}></td>
@@ -65,7 +66,6 @@
                                                 <td>${order.other}</td>
                                                 <td>${order.country}</td>
                                                 <td>${order.observations}</td>
-                                                <th><a href="<%=request.getContextPath()%>/editOrder/${order.orderId}">Edit</a> </th>
                                             </tr>
                                         </c:forEach>
                                     </tbody>

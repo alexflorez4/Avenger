@@ -43,6 +43,20 @@ public class ParseAmzOrder {
         public String getSupplierName() {
             return supplierName;
         }
+
+        public static String getSupplierName(int id){
+
+            switch (id){
+                case 500:
+                    return AZEnum.getSupplierName();
+                case 501:
+                    return FXEnum.getSupplierName();
+                case 502:
+                    return TDEnum.getSupplierName();
+                default:
+                    return "Supplier Not found";
+            }
+        }
     }
 
     public List<OrderEntity> parse(File file, int sellerId, int nextOrderId){
