@@ -33,6 +33,7 @@
         <setting name="validation-enabled" value="true" />
         <setting name="provider-name" value="" />
         <datasource-mapping>
+          <factory-entry name="entityManagerFactory" value="dataSource" />
           <factory-entry name="myDatabaseConfig" value="668a93a1-7465-4ebc-a14e-385f69c86b21" />
           <factory-entry name="noname-a.xml@0" value="668a93a1-7465-4ebc-a14e-385f69c86b21" />
         </datasource-mapping>

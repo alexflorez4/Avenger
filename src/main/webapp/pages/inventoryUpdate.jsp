@@ -19,7 +19,7 @@
                 <hr>
                 <!-- Breadcrumbs-->
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item active">Inventory File Upload</li>
+                    <li class="breadcrumb-item active">Inventory File Upload: <b>SKU | Price | Quantity | Weight Per Unit</b></li>
                 </ol>
 
                 <c:if test="${status == 'success'}">
@@ -33,8 +33,6 @@
                     </div>
                 </c:if>
 
-                <div style="font-size: small"> <p>Item Sku - Wholesale Price - Quantity - Weight Per Unit</p></div>
-
                 <form method="POST" action="inventoryUpdate.do" enctype="multipart/form-data">
                     <div class="form-group row">
                         <label for="azFile" class="col-sm-1 col-form-label">File</label>
@@ -47,6 +45,7 @@
                         <div class="col-sm-3">
                             <select class="form-control" id="supplier" name="supplier">
                                 <option selected value="500">AZ Trading</option>
+                                <option selected value="501">Fragrance X</option>
                                 <option value="599">Shades</option>
                             </select>
                         </div>

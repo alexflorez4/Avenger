@@ -18,10 +18,17 @@ public class clientTestExpressUpload {
 
         try {
             AppServices appServices = container.getBean(AppServices.class);
-            File amzOrders = new File("C:\\Users\\alexf\\Documents\\EA Group\\Welse\\sharew\\order052518.html");
+            //File amzOrders = new File("C:\\Users\\alexf\\Documents\\EA Group\\Welse\\sharew\\order052518.html");
             //appServices.processExpressOrder(amzOrders);
-            List<OrderEntity> orders = appServices.getSellerPendingOrders();
-            System.out.println(orders.size());
+            //List<OrderEntity> orders = appServices.getSellerPendingOrders();
+            //System.out.println(orders.size());
+
+            File updatedTrackings = new File("C:\\Users\\alexf\\Desktop\\Copy of staged_orders-4.xlsx");
+            appServices.updateTrackingIds(updatedTrackings);
+
+
+            //File userInventory = new File("C:\\Users\\alexf\\Documents\\Development\\Projects\\Shades\\Inventory Comparison.xlsx");
+            //appServices.compareUserInventory(userInventory);
         }catch (Exception e){
             System.out.println("Exception: \n\n");
             System.out.println(e);

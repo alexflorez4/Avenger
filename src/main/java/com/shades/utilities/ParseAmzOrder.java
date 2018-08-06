@@ -6,58 +6,21 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.springframework.security.crypto.keygen.StringKeyGenerator;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import static com.shades.utilities.ParseAmzOrder.EnumSuppliers.AZEnum;
-import static com.shades.utilities.ParseAmzOrder.EnumSuppliers.FXEnum;
-import static com.shades.utilities.ParseAmzOrder.EnumSuppliers.TDEnum;
+import static com.shades.utilities.Enumerations.Suppliers.AZEnum;
+import static com.shades.utilities.Enumerations.Suppliers.FXEnum;
+import static com.shades.utilities.Enumerations.Suppliers.TDEnum;
 
 public class ParseAmzOrder {
 
     private static final String TELE_DYN = "([A-Za-z]{2,3})([-])(\\d+\\w+)(//s)";
     private static final String FRAGX = "[0-9]{6}";
-
-    public enum EnumSuppliers {
-
-        AZEnum(500, "AZ Trading"), FXEnum(501, "Fragrance X"), TDEnum(502, "Teledynamics");
-
-        int supplierId;
-        String supplierName;
-
-        EnumSuppliers(int id, String name){
-            this.supplierId = id;
-            this.supplierName = name;
-        }
-
-        public int getSupplierId() {
-            return supplierId;
-        }
-
-        public String getSupplierName() {
-            return supplierName;
-        }
-
-        public static String getSupplierName(int id){
-
-            switch (id){
-                case 500:
-                    return AZEnum.getSupplierName();
-                case 501:
-                    return FXEnum.getSupplierName();
-                case 502:
-                    return TDEnum.getSupplierName();
-                default:
-                    return "Supplier Not found";
-            }
-        }
-    }
 
     public List<OrderEntity> parse(File file, int sellerId, int nextOrderId){
 
@@ -173,7 +136,7 @@ public class ParseAmzOrder {
                 total = StringUtils.removeFirst(total, "[^A-Za-z0-9.]").trim();
                 order.setMarketSoldAmount(Double.valueOf(total));
 
-                EnumSuppliers suppEnum = (EnumSuppliers) supplierChecker(sku);
+                Enumerations.Suppliers suppEnum = (Enumerations.Suppliers) supplierChecker(sku);
                 int supplierId = suppEnum.getSupplierId();
                 order.setSupplierId(supplierId);
 
@@ -186,7 +149,7 @@ public class ParseAmzOrder {
         return orders;
     }
 
-    public static Enum<EnumSuppliers> supplierChecker(String sku2Check){
+    public static Enum<Enumerations.Suppliers> supplierChecker(String sku2Check){
 
         if(Pattern.compile(FRAGX).matcher(sku2Check).matches()){
             return FXEnum;

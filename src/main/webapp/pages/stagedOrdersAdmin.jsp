@@ -2,7 +2,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
-<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -24,11 +24,17 @@
 
             <div class="row">
                 <div class="col-lg-12 bottom-buffer">
-
                     <div class="card mb-3">
                         <div class="card-header">
-                            <i class="fa fa-table"></i> Tracking Upload </div>
+                            <i class="fa fa-table"></i> Tracking Upload: <b>Order No | Supplier Order No | Tracking No | Shipping Cost | Supplier Price</b></div>
                             <div class="card-body">
+
+                                    <c:if test="${fail} ">
+                                        <div class="alert alert-danger">
+                                            ${fail}
+                                        </div>
+                                    </c:if>
+
                                 <form class="form-inline" method="POST" action="uploadTrackingIds.do" enctype="multipart/form-data">
                                     <div class="form-group mx-sm-3 mb-2">
                                         <input type="file" class="form-control" id="ordersFile" name="ordersFile">
@@ -38,9 +44,7 @@
                             </div>
                         <div class="card-footer small text-muted">Be Happy ;)</div>
                     </div>
-
                 </div>
-
             </div>
 
             <div class="row">

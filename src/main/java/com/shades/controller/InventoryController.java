@@ -1,10 +1,15 @@
 package com.shades.controller;
 
+import Entities.InventoryEntity;
 import Entities.OrderEntity;
 import com.shades.exceptions.ShadesException;
 import com.shades.services.az.AzProcess;
 import com.shades.services.fragx.FragxService;
 import com.shades.services.misc.AppServices;
+import com.shades.utilities.Utils;
+import com.shades.views.InventoryAllProducts;
+import com.shades.views.InventoryUserReport;
+import com.shades.views.InvoiceOrders;
 import com.shades.views.StagedOrdersExcel;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +33,6 @@ public class InventoryController {
     private static final Logger logger = Logger.getLogger(InventoryController.class);
 
     @Autowired
-    private AzProcess azProcess;
-
-    @Autowired
     private FragxService fragxService;
 
     @Autowired
@@ -39,11 +41,6 @@ public class InventoryController {
     @RequestMapping("/")
     public String actionsManager(){
         logger.info("Passing through controller!!!");
-        /*UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        System.out.println("************************" + userDetails.getUsername());
-        System.out.println("Authorities: " + userDetails.getAuthorities().size());
-        request.getSession().setAttribute("roles", String.valueOf(userDetails.getAuthorities().size()));
-        request.getSession().setAttribute("user",userDetails.getUsername());*/
         return "index";
     }
 
@@ -63,7 +60,7 @@ public class InventoryController {
             byte[] bytes = file.getBytes();
             stream.write(bytes);
             stream.close();
-            azProcess.updateInventory(serverFile, supplierId);
+            appServices.updateInventory(serverFile, supplierId);
         } catch (Exception e) {
             status = "Error. " + e;
             return new ModelAndView("inventoryUpdate", "status", status);
@@ -155,6 +152,13 @@ public class InventoryController {
         return new ModelAndView("completedOrders", "orders", completedOrders);
     }
 
+    @RequestMapping("/completedOrdersAdmin")
+    public ModelAndView displayCompletedOrdersAdmin() throws ShadesException {
+        List<OrderEntity> completedOrders = appServices.getAllCompletedOrders();
+        return new ModelAndView("completedOrders", "orders", completedOrders);
+    }
+
+
     @RequestMapping("/allNewOrdersAdmin")
     public ModelAndView displayAllNewOrders() throws ShadesException {
         List<OrderEntity> orders = appServices.getAllNewOrders();
@@ -171,6 +175,14 @@ public class InventoryController {
     public ModelAndView downloadStagedOrders() throws ShadesException {
         List<OrderEntity> orders = appServices.getStagedOrders();
         return new ModelAndView(new StagedOrdersExcel(), "orders", orders);
+    }
+
+    @RequestMapping("/generateInvoice")
+    public ModelAndView downloadSellerInvoices(@RequestParam("from") String from, @RequestParam("to") String to) throws ShadesException {
+        //List<OrderEntity> orders = appServices.getStagedOrders();
+        System.out.println("From: " + from + " - to " + to);
+        List<OrderEntity> orders = appServices.getOrdersForInvoice(from + " 00:00:00", to + " 23:59:59");
+        return new ModelAndView(new InvoiceOrders(), "orders", orders);
     }
 
     @RequestMapping(value = "/processExpress", method = RequestMethod.POST)
@@ -221,14 +233,52 @@ public class InventoryController {
             stream.write(bytes);
             stream.close();
             appServices.updateTrackingIds(serverFile);
-        } catch (FileNotFoundException e) {
 
-        } catch (IOException e) {
-
+        } catch (Exception e) {
+            return new ModelAndView("stagedOrdersAdmin", "status", "Error." + e);
         }
         List<OrderEntity> orders = appServices.getStagedOrders();
         return new ModelAndView("stagedOrdersAdmin", "orders", orders);
     }
+
+    @RequestMapping(value = "/pages/checkMyInventory", method = RequestMethod.POST)
+    public ModelAndView checkUserInventory(@RequestParam("myInventory") MultipartFile file){
+
+        File serverFile;
+        List<InventoryEntity> items;
+        try {
+            serverFile = Utils.saveMultipartFileToServer(file);
+            items = appServices.compareUserInventory(serverFile);
+        } catch (IOException e) {
+            return new ModelAndView("inventoryUser", "status", "Error." + e);
+        }
+
+        return new ModelAndView(new InventoryUserReport(), "items", items);
+    }
+
+    @RequestMapping(value = "/pages/allInventoryComparison", method = RequestMethod.POST)
+    public ModelAndView compareAllInventory(@RequestParam("myInventory2") MultipartFile file){
+
+        File serverFile;
+        List<InventoryEntity> items;
+        try {
+            serverFile = Utils.saveMultipartFileToServer(file);
+            items = appServices.compareAllUserInventory(serverFile);
+        } catch (IOException e) {
+            return new ModelAndView("inventoryUser", "status", "Error." + e);
+        }
+
+        return new ModelAndView(new InventoryUserReport(), "items", items);
+    }
+
+
+    @RequestMapping("/pages/downloadAllInventory")
+    public ModelAndView downloadAllInventory() throws ShadesException {
+        List<InventoryEntity> items = appServices.getAllInventory();
+        return new ModelAndView(new InventoryAllProducts(), "items", items);
+    }
+
+
 
     @RequestMapping("/stageOrder")
     public ModelAndView stageOrder(@RequestParam("orderToStage") String [] orderToStage){

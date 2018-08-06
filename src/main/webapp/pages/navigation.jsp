@@ -4,7 +4,7 @@
 
 <!-- Navigation-->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
-    <a class="navbar-brand" href="<%=request.getContextPath()%>">AVENGER - <sec:authentication property='principal.username'/></a>
+    <a class="navbar-brand" href="<%=request.getContextPath()%>">AVENGER</a>
     <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
             data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false"
             aria-label="Toggle navigation">
@@ -19,14 +19,14 @@
                 <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse" href="#collapseMulti"
                    data-parent="#exampleAccordion">
                     <i class="fa fa-fw fa-sitemap"></i>
-                    <span class="nav-link-text">My Inventory</span>
+                    <span class="nav-link-text"><sec:authentication property='principal.username'/></span>
                 </a>
                 <ul class="sidenav-second-level collapse" id="collapseMulti">
                     <li>
-                        <a href="#">Amazon</a>
+                        <a href="<%=request.getContextPath()%>/pages/inventoryUser.jsp">Inventory</a>
                     </li>
                     <li>
-                        <a href="#">Ebay</a>
+                        <a href="#">Reports</a>
                     </li>
                 </ul>
             </li>
@@ -76,19 +76,19 @@
                                     <a href="<%=request.getContextPath()%>/allNewOrdersAdmin.do">New</a>
                                 </li>
                                 <li>
-                                    <a href="<%=request.getContextPath()%>/stagedOrdersAdmin.do">Staging</a>
+                                    <a href="<%=request.getContextPath()%>/stagedOrdersAdmin.do">Staged</a>
                                 </li>
                                 <li>
-                                    <a href="#">Completed</a>
+                                    <a href="<%=request.getContextPath()%>/completedOrdersAdmin.do">Completed</a>
                                 </li>
                             </ul>
                         </li>
                         <li>
-                            <a href="#">Invoices</a>
+                            <a href="<%=request.getContextPath()%>/pages/invoices.jsp">Invoices</a>
                         </li>
-                        <li>
-                            <a href="#">Returns</a>
-                        </li>
+                        <%--<li>--%>
+                            <%--<a href="#">Returns</a>--%>
+                        <%--</li>--%>
                     </ul>
                 </li>
                 </sec:authorize>

@@ -53,8 +53,14 @@ public class InventoryDaoImpl implements InventoryDao {
     }
 
     @Override
-    public List<String> getAllProductsSet() {
+    public List<String> getAllSKUs() {
         Query q = em.createNativeQuery("SELECT sku FROM Inventory");
+        return q.getResultList();
+    }
+
+    @Override
+    public List<InventoryEntity> getAllProducts() {
+        Query q = em.createNativeQuery("SELECT * FROM Inventory", InventoryEntity.class);
         return q.getResultList();
     }
 
@@ -181,6 +187,13 @@ public class InventoryDaoImpl implements InventoryDao {
     }
 
     @Override
+    public List<OrderEntity> getAllCompletedOrders() {
+        Query q = em.createNativeQuery("SELECT * FROM Orders WHERE trackingId IS NOT NULL", OrderEntity.class);
+        List<OrderEntity> orders = q.getResultList();
+        return orders;
+    }
+
+    @Override
     public OrderEntity getOrderById(int orderId){
         Query q = em.createNativeQuery("SELECT * FROM Orders WHERE  orderId = ?", OrderEntity.class);
         q.setParameter(1, orderId);
@@ -212,17 +225,53 @@ public class InventoryDaoImpl implements InventoryDao {
     }
 
     @Override
+    public List<OrderEntity> getOrdersForInvoice(String startDate, String endDate) {
+        Query q = em.createNativeQuery("SELECT * FROM Orders WHERE trackingId IS NOT NULL AND orderDate BETWEEN ? AND ?", OrderEntity.class);
+        q.setParameter(1, startDate);
+        q.setParameter(2, endDate);
+        List<OrderEntity> orders = q.getResultList();
+        return orders;
+    }
+
+    @Override
     public void updateTrackingInfo(List<OrderEntity> orderList) {
 
-        Query q = em.createNativeQuery("UPDATE Orders SET shippingCost = ?, trackingId = ?, totalPriceShades = ? WHERE orderId = ?", OrderEntity.class);
+        orderList.stream().forEach(order -> {
+            OrderEntity dbOrder = getOrderById(order.getOrderId());
+            if(order.getSupplierOrderId() == null && dbOrder.getSupplierOrderId() != null){
+                order.setSupplierOrderId(dbOrder.getSupplierOrderId());
+            }
+            if(order.getTrackingId() == null && dbOrder.getTrackingId() != null){
+                order.setTrackingId(dbOrder.getTrackingId());
+            }
+            if(order.getShippingCost() == null && dbOrder.getShippingCost() != null){
+                order.setShippingCost(dbOrder.getShippingCost());
+            }else if(order.getShippingCost() == null){
+                order.setShippingCost(0.0);
+            }
+            if(order.getSupplierPrice() == null && dbOrder.getSupplierPrice() != null){
+                order.setSupplierPrice(dbOrder.getSupplierPrice());
+            }
+            if(order.getShadesPrice() == null && dbOrder.getShadesPrice() != null){
+                order.setShadesPrice(dbOrder.getShadesPrice());
+            }
 
-        for(OrderEntity order: orderList){
-            OrderEntity temp = getOrderById(order.getOrderId());
-            q.setParameter(1, order.getShippingCost());
-            q.setParameter(2, order.getTrackingId());
-            q.setParameter(3, temp.getShadesPrice() + order.getShippingCost());
-            q.setParameter(4, order.getOrderId());
+            order.setTotalPriceShades(order.getShadesPrice() + order.getShippingCost());
+        });
+
+        Query q = em.createNativeQuery("UPDATE Orders SET orderDate=?, supplierOrderId=?, trackingId=?, shippingCost=?, supplierPrice=?," +
+                "shadesPrice=?, totalPriceShades=? WHERE orderId = ?");
+
+        orderList.stream().forEach(order -> {
+            q.setParameter(1, new Timestamp(System.currentTimeMillis()));
+            q.setParameter(2, order.getSupplierOrderId());
+            q.setParameter(3, order.getTrackingId());
+            q.setParameter(4, order.getShippingCost());
+            q.setParameter(5, order.getSupplierPrice());
+            q.setParameter(6, order.getShadesPrice());
+            q.setParameter(7, order.getTotalPriceShades());
+            q.setParameter(8, order.getOrderId());
             q.executeUpdate();
-        }
+        });
     }
 }

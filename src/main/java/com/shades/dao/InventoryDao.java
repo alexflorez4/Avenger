@@ -13,7 +13,9 @@ public interface InventoryDao {
 
     void updateInventory(List<InventoryEntity> inventorySet);
 
-    List<String> getAllProductsSet();
+    List<String> getAllSKUs();
+
+    List<InventoryEntity> getAllProducts();
 
     InventoryEntity findProductDetails(String sku) throws ShadesException;
 
@@ -38,4 +40,8 @@ public interface InventoryDao {
     List<OrderEntity> getStagedOrders();
 
     void updateTrackingInfo(List<OrderEntity> orderList);
+
+    List<OrderEntity> getAllCompletedOrders();
+
+    List<OrderEntity> getOrdersForInvoice(String start, String end);
 }
