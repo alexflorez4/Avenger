@@ -1,7 +1,5 @@
 package Entities;
 
-import org.hibernate.annotations.SQLInsert;
-
 import javax.persistence.*;
 import java.sql.Timestamp;
 
@@ -9,9 +7,11 @@ import java.sql.Timestamp;
 @Entity
 @Table(name = "Orders", schema = "aws_db_shades1")
 public class OrderEntity {
+
     private int orderId;
     private Timestamp orderDate;
     private int sellerId;
+    private String sellerName;
     private Integer marketId;
     private Integer supplierId;
     private String marketOrderId;
@@ -25,12 +25,12 @@ public class OrderEntity {
     private String street2;
     private String city;
     private String state;
-    private String other;
     private String zipCode;
     private String country;
     private String trackingId;
     private Double supplierPrice;
     private Double shadesPrice;
+    private String shippingService;
     private Double shippingCost;
     private Double totalPriceShades;
     private Double marketSoldAmount;
@@ -38,7 +38,25 @@ public class OrderEntity {
     private String observations;
     private int processed;
 
+
     public OrderEntity() {
+    }
+
+
+    public OrderEntity(OrderEntity order) {
+        this.orderId = order.getOrderId();
+        this.sellerId = order.getSellerId();
+        this.sellerName = order.getSellerName();
+        this.marketId = order.getMarketId();
+        this.marketOrderId = order.getMarketOrderId();
+        this.buyerName = order.getBuyerName();
+        this.street = order.getStreet();
+        this.street2 = order.getStreet2();
+        this.city = order.getCity();
+        this.state = order.getState();
+        this.zipCode = order.getZipCode();
+        this.country = order.getCountry();
+        this.shippingService = order.getShippingService();
     }
 
     @Id
@@ -69,6 +87,16 @@ public class OrderEntity {
 
     public void setSellerId(int sellerId) {
         this.sellerId = sellerId;
+    }
+
+    @Basic
+    @Column(name = "sellerName")
+    public String getSellerName() {
+        return sellerName;
+    }
+
+    public void setSellerName(String sellerName) {
+        this.sellerName = sellerName;
     }
 
     @Basic
@@ -202,13 +230,13 @@ public class OrderEntity {
     }
 
     @Basic
-    @Column(name = "other")
-    public String getOther() {
-        return other;
+    @Column(name = "shippingService")
+    public String getShippingService() {
+        return shippingService;
     }
 
-    public void setOther(String other) {
-        this.other = other;
+    public void setShippingService(String other) {
+        this.shippingService = other;
     }
 
     @Basic
@@ -322,81 +350,6 @@ public class OrderEntity {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        OrderEntity that = (OrderEntity) o;
-
-        if (orderId != that.orderId) return false;
-        if (sellerId != that.sellerId) return false;
-        if (quantity != that.quantity) return false;
-        if (orderDate != null ? !orderDate.equals(that.orderDate) : that.orderDate != null) return false;
-        if (marketId != null ? !marketId.equals(that.marketId) : that.marketId != null) return false;
-        if (supplierId != null ? !supplierId.equals(that.supplierId) : that.supplierId != null) return false;
-        if (marketOrderId != null ? !marketOrderId.equals(that.marketOrderId) : that.marketOrderId != null)
-            return false;
-        if (supplierOrderId != null ? !supplierOrderId.equals(that.supplierOrderId) : that.supplierOrderId != null)
-            return false;
-        if (sku != null ? !sku.equals(that.sku) : that.sku != null) return false;
-        if (marketListingId != null ? !marketListingId.equals(that.marketListingId) : that.marketListingId != null)
-            return false;
-        if (asin != null ? !asin.equals(that.asin) : that.asin != null) return false;
-        if (buyerName != null ? !buyerName.equals(that.buyerName) : that.buyerName != null) return false;
-        if (street != null ? !street.equals(that.street) : that.street != null) return false;
-        if (street2 != null ? !street2.equals(that.street2) : that.street2 != null) return false;
-        if (city != null ? !city.equals(that.city) : that.city != null) return false;
-        if (state != null ? !state.equals(that.state) : that.state != null) return false;
-        if (other != null ? !other.equals(that.other) : that.other != null) return false;
-        if (zipCode != null ? !zipCode.equals(that.zipCode) : that.zipCode != null) return false;
-        if (trackingId != null ? !trackingId.equals(that.trackingId) : that.trackingId != null) return false;
-        if (supplierPrice != null ? !supplierPrice.equals(that.supplierPrice) : that.supplierPrice != null)
-            return false;
-        if (shadesPrice != null ? !shadesPrice.equals(that.shadesPrice) : that.shadesPrice != null) return false;
-        if (shippingCost != null ? !shippingCost.equals(that.shippingCost) : that.shippingCost != null) return false;
-        if (totalPriceShades != null ? !totalPriceShades.equals(that.totalPriceShades) : that.totalPriceShades != null)
-            return false;
-        if (marketSoldAmount != null ? !marketSoldAmount.equals(that.marketSoldAmount) : that.marketSoldAmount != null)
-            return false;
-        if (currency != null ? !currency.equals(that.currency) : that.currency != null) return false;
-        if (observations != null ? !observations.equals(that.observations) : that.observations != null) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = orderId;
-        result = 31 * result + (orderDate != null ? orderDate.hashCode() : 0);
-        result = 31 * result + sellerId;
-        result = 31 * result + (marketId != null ? marketId.hashCode() : 0);
-        result = 31 * result + (supplierId != null ? supplierId.hashCode() : 0);
-        result = 31 * result + (marketOrderId != null ? marketOrderId.hashCode() : 0);
-        result = 31 * result + (supplierOrderId != null ? supplierOrderId.hashCode() : 0);
-        result = 31 * result + (sku != null ? sku.hashCode() : 0);
-        result = 31 * result + (marketListingId != null ? marketListingId.hashCode() : 0);
-        result = 31 * result + (asin != null ? asin.hashCode() : 0);
-        result = 31 * result + quantity;
-        result = 31 * result + (buyerName != null ? buyerName.hashCode() : 0);
-        result = 31 * result + (street != null ? street.hashCode() : 0);
-        result = 31 * result + (street2 != null ? street2.hashCode() : 0);
-        result = 31 * result + (city != null ? city.hashCode() : 0);
-        result = 31 * result + (state != null ? state.hashCode() : 0);
-        result = 31 * result + (other != null ? other.hashCode() : 0);
-        result = 31 * result + (zipCode != null ? zipCode.hashCode() : 0);
-        result = 31 * result + (trackingId != null ? trackingId.hashCode() : 0);
-        result = 31 * result + (supplierPrice != null ? supplierPrice.hashCode() : 0);
-        result = 31 * result + (shadesPrice != null ? shadesPrice.hashCode() : 0);
-        result = 31 * result + (shippingCost != null ? shippingCost.hashCode() : 0);
-        result = 31 * result + (totalPriceShades != null ? totalPriceShades.hashCode() : 0);
-        result = 31 * result + (marketSoldAmount != null ? marketSoldAmount.hashCode() : 0);
-        result = 31 * result + (currency != null ? currency.hashCode() : 0);
-        result = 31 * result + (observations != null ? observations.hashCode() : 0);
-        return result;
-    }
-
-
-    @Override
     public String toString() {
         return  "orderId=" + orderId +
                 ", orderDate=" + orderDate +
@@ -414,7 +367,7 @@ public class OrderEntity {
                 ", street2='" + street2 + '\'' +
                 ", city='" + city + '\'' +
                 ", state='" + state + '\'' +
-                ", other='" + other + '\'' +
+                ", other='" + shippingService + '\'' +
                 ", zipCode='" + zipCode + '\'' +
                 ", country='" + country + '\'' +
                 ", trackingId='" + trackingId + '\'' +

@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.sql.Timestamp;
 
 @Entity
-@Table(name = "Inventory", schema = "aws_db_shades1")
+@Table(name = "Inventory", schema = "aws_db_shades1", catalog = "")
 @IdClass(InventoryEntityPK.class)
 public class InventoryEntity {
     private String sku;
@@ -17,6 +17,7 @@ public class InventoryEntity {
     private Double shippingCost;
     private Timestamp lastUpdate;
     private String status;
+    private Double suggestedPrice;
 
     public InventoryEntity() {
     }
@@ -134,6 +135,16 @@ public class InventoryEntity {
         this.status = status;
     }
 
+    @Basic
+    @Column(name = "suggestedPrice")
+    public Double getSuggestedPrice() {
+        return suggestedPrice;
+    }
+
+    public void setSuggestedPrice(Double suggestedPrice) {
+        this.suggestedPrice = suggestedPrice;
+    }
+
     @Override
     public String toString() {
         return  "sku: " + sku + " - Supplier Id:" + supplierId + " - Quantity: " + quantity +
@@ -141,4 +152,5 @@ public class InventoryEntity {
                 " - Shades Selling Price: " + shadesSellingPrice + "  Weight: " + weight +
                 " - Shipping cost: " + shippingCost + " - last Update:" + lastUpdate + " - Status " + status;
     }
+
 }

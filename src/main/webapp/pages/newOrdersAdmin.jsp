@@ -17,7 +17,7 @@
 
 <div class="content-wrapper">
     <div class="container-fluid">
-        <h1>Pending Orders</h1>
+        <h1>New Orders</h1>
         <hr>
 
         <div class="panel-body">
@@ -29,13 +29,12 @@
                             <i class="fa fa-table"></i> Orders </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <form role="form" method="post" action="<%=request.getContextPath()%>/stageOrder.do" id="orderForm">
-                                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                <form id="frm-example" role="form" method="post" action="<%=request.getContextPath()%>/stageOrder.do" >
+                                    <table id="example" class="table table-bordered"  width="100%" cellspacing="0">
                                         <thead>
                                         <tr>
                                             <th></th>
                                             <th>No</th>
-                                            <th>Market Order id</th>
                                             <th>SKU</th>
                                             <th>Quantity</th>
                                             <th>Buyer Name</th>
@@ -44,10 +43,11 @@
                                             <th>City</th>
                                             <th>State</th>
                                             <th>Zip Code</th>
-                                            <th>Other</th>
                                             <th>Country</th>
+                                            <th>Shipping</th>
                                             <th>Observations</th>
-                                            
+                                            <th>Seller</th>
+                                            <th>Date</th>
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -55,18 +55,19 @@
                                             <tr>
                                                 <th><input type="checkbox" name="orderToStage" value="${order.orderId}"></th>
                                                 <td>${order.orderId}</td>
-                                                <td>${order.marketOrderId}</td>
                                                 <td>${order.sku}</td>
                                                 <td>${order.quantity}</td>
-                                                <td>${order.buyerName}></td>
+                                                <td>${order.buyerName}</td>
                                                 <td>${order.street}</td>
                                                 <td>${order.street2}</td>
                                                 <td>${order.city}</td>
                                                 <td>${order.state}</td>
                                                 <td>${order.zipCode}</td>
-                                                <td>${order.other}</td>
                                                 <td>${order.country}</td>
+                                                <td>${order.shippingService}</td>
                                                 <td>${order.observations}</td>
+                                                <td>${order.sellerName}</td>
+                                                <td>${order.orderDate}</td>
                                             </tr>
                                         </c:forEach>
                                         </tbody>
@@ -94,6 +95,9 @@
     <script src="<%=request.getContextPath()%>/resources/vendor/datatables/dataTables.bootstrap4.js"></script>
     <!-- Custom scripts for this page-->
     <script src="<%=request.getContextPath()%>/resources/js/sb-admin-datatables.min.js"></script>
+
+    <%--<link type="text/css" href="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.11/css/dataTables.checkboxes.css" rel="stylesheet" />--%>
+    <%--<script type="text/javascript" src="<%=request.getContextPath()%>/resources/vendor/datatables/selectAllCheckboxes.js"></script>--%>
 
 </div>
 

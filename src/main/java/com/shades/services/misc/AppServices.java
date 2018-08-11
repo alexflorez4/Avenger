@@ -5,7 +5,7 @@ import Entities.InventoryEntity;
 import Entities.OrderEntity;
 import com.shades.dao.InventoryDao;
 import com.shades.exceptions.ShadesException;
-import com.shades.services.az.AzProcess;
+import com.shades.utilities.Enumerations;
 import com.shades.utilities.ParseAmzOrder;
 import com.shades.utilities.Utils;
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +29,7 @@ import java.util.*;
 @Service
 public class AppServices {
 
-    private static Logger logger = Logger.getLogger(AzProcess.class);
+    private static final Logger logger = Logger.getLogger(AppServices.class);
 
     @Autowired
     private InventoryDao inventoryDao;
@@ -38,60 +38,22 @@ public class AppServices {
         return inventoryDao.getAllSKUs();
     }
 
-    public boolean processNewSingleOrder(OrderEntity order) throws ShadesException{
+    public void processNewSingleOrder(OrderEntity order) throws ShadesException{
 
-        System.out.println(order);
         if(order.getOrderId() == 0){
             int nextOrderId = inventoryDao.getNextOrderId();
             order.setOrderId(nextOrderId);
             order.setSellerId(getSellerId());
+            order.setSellerName(Enumerations.Sellers.getSellerName(order.getSellerId()));
         }
 
         inventoryDao.placeNewOrder(order);
-        logger.info("New Order: " + order);
-        return false;
     }
 
     private int getSellerId() throws ShadesException {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String userName = userDetails.getUsername();
         return inventoryDao.getSellerId(userName);
-    }
-
-    //TODO: TRY TO FIX THIS METHOD. NOTE THAT THE FRAG API MIGHT NOT BE STABLE
-    private void processProductDetails(OrderEntity order, InventoryEntity product) throws ShadesException {
-
-        /*if(product.getSupplierId() == FRAGX){
-
-            Product productInfo = null;
-            //Getting latest product info:
-            try {
-                productInfo = fragxService.getProductDetails(product);
-                if(!productInfo.isInstock()){
-                    throw new ShadesException("Product " + product.getSku() + " is out of stock in Fragrance X.");
-                }
-
-                Double shadesPrice = Utils.shadesPrices(productInfo.getWholesalePriceUSD());
-                Double shippingCost = Utils.fragXShippingCost(order.getQuantity());
-
-                order.setSupplierPrice(productInfo.getWholesalePriceUSD());
-                order.setShadesPrice(shadesPrice);
-                order.setShippingCost(shippingCost);
-                order.setTotalPriceShades(shadesPrice + shippingCost);
-
-            }catch (Exception e){ //TODO: NOTIFY API FAILURE
-                logger.info("Fragrance X API is not working.");
-                order.setSupplierPrice(product.getSupplierPrice());
-                order.setShadesPrice(product.getShadesSellingPrice());
-                order.setShippingCost(product.getShippingCost());
-            }
-
-        }else*/{
-            order.setSupplierPrice(product.getSupplierPrice());
-            order.setShadesPrice(product.getShadesSellingPrice());
-            order.setShippingCost(product.getShippingCost());
-        }
-
     }
 
     public Set<OrderEntity> processExpressOrder(File amzOrders) throws ShadesException {
@@ -107,6 +69,8 @@ public class AppServices {
             try {
                 inventoryDao.placeNewOrder(nextOrder);
             }catch (ShadesException e){
+                logger.info("Exception thrown at app services: " + e);
+                nextOrder.setObservations(e.getMessage());
                 failingOrders.add(nextOrder);
             }
         }
@@ -153,6 +117,11 @@ public class AppServices {
             while (iterator.hasNext())
             {
                 Row currentRow = iterator.next();
+                System.out.println(currentRow.getPhysicalNumberOfCells());
+                if(currentRow.getPhysicalNumberOfCells() <= 1){
+                    continue;
+                }
+
                 Iterator<Cell> cellIterator = currentRow.iterator();
                 OrderEntity order = new OrderEntity();
                 while (cellIterator.hasNext())
@@ -162,20 +131,27 @@ public class AppServices {
                     switch (columnIndex)
                     {
                         case 0:
-                            order.setOrderId((int)cell.getNumericCellValue());
+                            if(cell.getCellTypeEnum().equals(CellType.NUMERIC)) {
+                                order.setOrderId((int)cell.getNumericCellValue());
+                            }else if(StringUtils.isNotBlank(cell.getStringCellValue())){
+                                order.setOrderId(Integer.valueOf(cell.getStringCellValue()));
+                            }else {
+                                continue;
+                            }
                             break;
                         case 1:
                             if(!cell.getCellTypeEnum().equals(CellType.BLANK)){
                                 order.setSupplierOrderId(cell.getCellTypeEnum().equals(CellType.NUMERIC) ?
-                                        String.valueOf(cell.getNumericCellValue()) : cell.getStringCellValue());
+                                    Utils.cellNumberToString(cell.getNumericCellValue()) : cell.getStringCellValue());
                             }
                             break;
                         case 2:
 
                             if(!cell.getCellTypeEnum().equals(CellType.BLANK)){
                                 if(cell.getCellTypeEnum().equals(CellType.NUMERIC)){
-                                    order.setTrackingId(String.valueOf(cell.getNumericCellValue()));
-                                }else if(cell.getCellTypeEnum().equals(CellType.STRING)){
+                                    String cellValue = Utils.cellNumberToString(cell.getNumericCellValue());
+                                    order.setTrackingId(cellValue);
+                                }else if(cell.getCellTypeEnum().equals(CellType.STRING) && StringUtils.isNotBlank(cell.getStringCellValue())){
                                     order.setTrackingId(cell.getStringCellValue());
                                 }
                             }
@@ -184,7 +160,7 @@ public class AppServices {
                             if(!cell.getCellTypeEnum().equals(CellType.BLANK)){
                                 if(cell.getCellTypeEnum().equals(CellType.STRING) && StringUtils.isNotBlank(cell.getStringCellValue())){
                                     order.setShippingCost(Double.valueOf(cell.getStringCellValue()));
-                                }else{
+                                }else if(cell.getCellTypeEnum().equals(CellType.NUMERIC)){
                                     order.setShippingCost(cell.getNumericCellValue());
                                 }
                             }
@@ -193,7 +169,7 @@ public class AppServices {
                             if(!cell.getCellTypeEnum().equals(CellType.BLANK)){
                                 if(cell.getCellTypeEnum().equals(CellType.STRING) && StringUtils.isNotBlank(cell.getStringCellValue())){
                                     order.setSupplierPrice(Double.valueOf(cell.getStringCellValue()));
-                                }else{
+                                }else if(cell.getCellTypeEnum().equals(CellType.NUMERIC)){
                                     order.setSupplierPrice(cell.getNumericCellValue());
                                 }
                                 order.setShadesPrice(Utils.shadesPrices(order.getSupplierPrice()));
@@ -202,6 +178,9 @@ public class AppServices {
                         default:
                             break;
                     }
+                }
+                if(order.getOrderId() == 0){
+                    continue;
                 }
                 orderList.add(order);
             }
@@ -251,20 +230,21 @@ public class AppServices {
 
             while (cellIterator.hasNext()){
 
-                Cell currentCell = cellIterator.next();
-                int cell = currentCell.getColumnIndex();
+                Cell cell = cellIterator.next();
+                int columnIndex = cell.getColumnIndex();
 
-                switch (cell){
+                switch (columnIndex){
                     case 0: //Item Sku
-                        userItem.setSku(currentCell.getStringCellValue());
+                        userItem.setSupplierProductId(cell.getCellTypeEnum().equals(CellType.STRING) ? cell.getStringCellValue() : String.valueOf(cell.getNumericCellValue()));
+                        String sku = cell.getCellTypeEnum().equals(CellType.STRING) ? cell.getStringCellValue() : String.valueOf(cell.getNumericCellValue());
+                        userItem.setSku(Utils.parseSku(sku));
                         break;
                     case 1: //Wholesale Price
-                        Double cost = currentCell.getNumericCellValue();
-                        userItem.setSupplierPrice(cost);
-                        userItem.setShadesSellingPrice(Utils.shadesPrices(cost));
+                        //Holds the seller price on markets
+                        userItem.setShadesSellingPrice(cell.getNumericCellValue());
                         break;
-                    case 2: //Quantity
-                        userItem.setQuantity(new Double(currentCell.getNumericCellValue()).intValue());
+                    case 2: //Quantity of seller on market
+                        userItem.setQuantity(new Double(cell.getNumericCellValue()).intValue());
                         break;
                     default:
                         break;
@@ -278,7 +258,6 @@ public class AppServices {
     public List<InventoryEntity> getAllInventory() {
         return inventoryDao.getAllProducts();
     }
-
 
     public boolean updateInventory(File inventoryFile, int supplierId) {
 
@@ -306,28 +285,31 @@ public class AppServices {
 
             while (cellIterator.hasNext()){
 
-                Cell currentCell = cellIterator.next();
-                int cell = currentCell.getColumnIndex();
+                Cell cell = cellIterator.next();
+                int columnIndex = cell.getColumnIndex();
 
-                switch (cell){
+                switch (columnIndex){
                     case 0: //Item Sku
-                        item.setSku(currentCell.getStringCellValue());
+                        item.setSku(cell.getCellTypeEnum().equals(CellType.STRING) ? cell.getStringCellValue() : String.valueOf(cell.getNumericCellValue()));
                         break;
                     case 1: //Wholesale Price
-                        Double cost = currentCell.getNumericCellValue();
+                        Double cost = cell.getNumericCellValue();
+                        if(supplierId == 500){
+                            cost += 2;
+                        }
                         item.setSupplierPrice(cost);
                         item.setShadesSellingPrice(Utils.shadesPrices(cost));
                         break;
                     case 2: //Quantity
-                        item.setQuantity(new Double(currentCell.getNumericCellValue()).intValue());
+                        item.setQuantity(new Double(cell.getNumericCellValue()).intValue());
                         break;
                     case 3://Weight Per Unit
 
-                        Double weight =  currentCell.getNumericCellValue();
+                        Double weight =  cell.getNumericCellValue();
                         item.setWeight(weight);
 
                         if(supplierId == 501){
-                            item.setShippingCost(5.0);
+                            item.setShippingCost(6.0);
                         }else{
                             if(weight <= 1){
                                 item.setShippingCost(7.50);
@@ -344,6 +326,7 @@ public class AppServices {
                             }else {
                                 item.setShippingCost(99.00);
                             }
+                            item.setSuggestedPrice(Utils.getProductRecommendedPrice(item.getShadesSellingPrice(), item.getShippingCost()));
                         }
                         break;
                     default:

@@ -60,6 +60,5 @@ public class StagedOrdersExcel extends AbstractXlsxView {
             orderRow.createCell(9).setCellValue(next.getCountry());
             orderRow.createCell(10).setCellValue(Enumerations.Suppliers.getSupplierName(next.getSupplierId()));
         }
-        System.out.println("completed");
     }
 }

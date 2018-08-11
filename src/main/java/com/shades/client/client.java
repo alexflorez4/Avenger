@@ -2,7 +2,6 @@ package com.shades.client;
 
 import Entities.OrderEntity;
 import com.shades.exceptions.ShadesException;
-import com.shades.services.az.AzProcess;
 import com.shades.services.misc.AppServices;
 import org.apache.log4j.Logger;
 import org.springframework.context.support.ClassPathXmlApplicationContext;

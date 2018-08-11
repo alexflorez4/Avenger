@@ -24,9 +24,9 @@ public class InventoryDaoImpl implements InventoryDao {
         logger.info("Updating inventory. " + itemsList.size() + " items changed.");
 
         Query query = em.createNativeQuery("" +
-                "INSERT IGNORE INTO aws_db_shades1.Inventory(sku, supplierId, quantity, supplierProductId, supplierPrice, shadesSellingPrice, weight, shippingCost, lastUpdate, status)" +
-                "VALUES (?,?,?,?,?,?,?,?,?,?)" +
-                "ON DUPLICATE KEY UPDATE quantity = ?, supplierPrice = ?, shadesSellingPrice = ?, lastUpdate = ?, status = ?");
+                "INSERT IGNORE INTO aws_db_shades1.Inventory(sku, supplierId, quantity, supplierProductId, supplierPrice, shadesSellingPrice, weight, shippingCost, lastUpdate, status, suggestedPrice)" +
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?)" +
+                "ON DUPLICATE KEY UPDATE quantity = ?, supplierPrice = ?, shadesSellingPrice = ?, lastUpdate = ?, status = ?, suggestedPrice = ?");
 
             itemsList.stream().forEach((entity) -> {
                 query.setParameter(1, entity.getSku());
@@ -39,12 +39,14 @@ public class InventoryDaoImpl implements InventoryDao {
                 query.setParameter(8, entity.getShippingCost());
                 query.setParameter(9, new Timestamp(System.currentTimeMillis()));
                 query.setParameter(10, entity.getStatus());
+                query.setParameter(11, entity.getSuggestedPrice());
 
-                query.setParameter(11, entity.getQuantity());
-                query.setParameter(12, entity.getSupplierPrice());
-                query.setParameter(13, entity.getShadesSellingPrice());
-                query.setParameter(14, entity.getLastUpdate());
-                query.setParameter(15, entity.getStatus());
+                query.setParameter(12, entity.getQuantity());
+                query.setParameter(13, entity.getSupplierPrice());
+                query.setParameter(14, entity.getShadesSellingPrice());
+                query.setParameter(15, entity.getLastUpdate());
+                query.setParameter(16, entity.getStatus());
+                query.setParameter(17, entity.getSuggestedPrice());
 
                 query.executeUpdate();
                 System.out.println(entity.getSku() + " - " + entity.getStatus());
@@ -87,13 +89,17 @@ public class InventoryDaoImpl implements InventoryDao {
 
         InventoryEntity item = findProductDetails(order.getSku());
 
+        if(item.getQuantity() < 1){
+            throw new ShadesException("Sku " + item.getSku() + " is out of stock");
+        }
+
         Query q =  em.createNativeQuery("INSERT IGNORE INTO Orders (" +
                 "orderId, orderDate, sellerId, marketId, supplierId, marketOrderId, sku, marketListingId, asin, " +
-                "quantity, buyerName, street, street2, city, state, other, zipCode, country, supplierPrice,\n" +
-                "shadesPrice, shippingCost, totalPriceShades, marketSoldAmount, currency, observations)" +
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) " +
+                "quantity, buyerName, street, street2, city, state, zipCode, country, supplierPrice,\n" +
+                "shadesPrice, shippingService, shippingCost, totalPriceShades, marketSoldAmount, currency, observations, sellerName)" +
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) " +
                 "ON DUPLICATE KEY UPDATE orderDate = ?, quantity = ?, buyerName = ? , street = ?, street2=?, " +
-                "city = ?, state = ?, other = ?, zipCode = ?, country = ?, totalPriceShades = ?, observations = ?");
+                "city = ?, state = ?, shippingService = ?, zipCode = ?, country = ?, totalPriceShades = ?, observations = ?");
 
         q.setParameter(1, order.getOrderId());
         q.setParameter(2, new Timestamp(System.currentTimeMillis()));
@@ -110,30 +116,30 @@ public class InventoryDaoImpl implements InventoryDao {
         q.setParameter(13, order.getStreet2());
         q.setParameter(14, order.getCity());
         q.setParameter(15, order.getState());
-        q.setParameter(16, order.getOther());
-        q.setParameter(17, order.getZipCode());
-        q.setParameter(18, order.getCountry());
-        q.setParameter(19, item.getSupplierPrice()); //Supplier price
-        q.setParameter(20, item.getShadesSellingPrice()); //Shades price
+        q.setParameter(16, order.getZipCode());
+        q.setParameter(17, order.getCountry());
+        q.setParameter(18, item.getSupplierPrice()); //Supplier price
+        q.setParameter(19, item.getShadesSellingPrice()); //Shades price
+        q.setParameter(20, order.getShippingService());
         q.setParameter(21, item.getShippingCost()); //Shipping cost
-        q.setParameter(22, (item.getShadesSellingPrice() * item.getQuantity()) + item.getShippingCost()); //Total Price Shades
+        q.setParameter(22, (item.getShadesSellingPrice() * order.getQuantity()) + item.getShippingCost()); //Total Price Shades
         q.setParameter(23, order.getMarketSoldAmount());
         q.setParameter(24, order.getCurrency());
         q.setParameter(25, order.getObservations());
+        q.setParameter(26, order.getSellerName());
 
-        q.setParameter(26, new Timestamp(System.currentTimeMillis()));
-        q.setParameter(27, order.getQuantity());
-        q.setParameter(28, order.getBuyerName());
-        q.setParameter(29, order.getStreet());
-        q.setParameter(30, order.getStreet2());
-        q.setParameter(31, order.getCity());
-        q.setParameter(32, order.getState());
-        q.setParameter(33, order.getOther());
-        q.setParameter(34, order.getZipCode());
-        q.setParameter(35, order.getCountry());
-        q.setParameter(36, (item.getShadesSellingPrice() * item.getQuantity()) + item.getShippingCost()); //Total Price Shades
-        q.setParameter(37, order.getObservations());
-
+        q.setParameter(27, new Timestamp(System.currentTimeMillis()));
+        q.setParameter(28, order.getQuantity());
+        q.setParameter(29, order.getBuyerName());
+        q.setParameter(30, order.getStreet());
+        q.setParameter(31, order.getStreet2());
+        q.setParameter(32, order.getCity());
+        q.setParameter(33, order.getState());
+        q.setParameter(34, order.getShippingService());
+        q.setParameter(35, order.getZipCode());
+        q.setParameter(36, order.getCountry());
+        q.setParameter(37, (item.getShadesSellingPrice() * order.getQuantity()) + item.getShippingCost()); //Total Price Shades
+        q.setParameter(38, order.getObservations());
         q.executeUpdate();
     }
 

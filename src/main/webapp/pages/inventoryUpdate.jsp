@@ -33,7 +33,7 @@
                     </div>
                 </c:if>
 
-                <form method="POST" action="inventoryUpdate.do" enctype="multipart/form-data">
+                <form method="POST" action="inventoryUpdate.do" enctype="multipart/form-data" id="inventoryUpload">
                     <div class="form-group row">
                         <label for="azFile" class="col-sm-1 col-form-label">File</label>
                         <div class="col-sm-3">
@@ -44,8 +44,9 @@
                         <label for="supplier" class="col-sm-1 col-form-label">Supplier</label>
                         <div class="col-sm-3">
                             <select class="form-control" id="supplier" name="supplier">
-                                <option selected value="500">AZ Trading</option>
-                                <option selected value="501">Fragrance X</option>
+                                <option></option>
+                                <option value="500">AZ Trading</option>
+                                <option value="501">Fragrance X</option>
                                 <option value="599">Shades</option>
                             </select>
                         </div>
@@ -81,6 +82,9 @@
             </div>
             <!-- /.container-fluid-->
             <jsp:include page="footer.jsp"/>
+            <%--Form Validation - https://jqueryvalidation.org/ --%>
+            <script type="text/javascript" src="<%=request.getContextPath()%>/resources/vendor/jquery-validation/jquery.validate.min.js"></script>
+            <script type="text/javascript" src="<%=request.getContextPath()%>/resources/vendor/jquery-validation/inventoryUpdateFormValidation.js"></script>
         </div>
         <!-- /.content-wrapper-->
     </body>

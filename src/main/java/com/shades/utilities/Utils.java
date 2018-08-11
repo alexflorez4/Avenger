@@ -13,17 +13,26 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static com.shades.utilities.Enumerations.Suppliers.AZEnum;
+import static com.shades.utilities.Enumerations.Suppliers.FXEnum;
+import static com.shades.utilities.Enumerations.Suppliers.TDEnum;
 
 public class Utils {
 
     private static final Logger logger = Logger.getLogger(Utils.class);
+    private static final String TELE_DYN = "([A-Za-z]{2,3})([-])(\\d+\\w+)(//s)";
+    private static final String FRAGX = "[0-9]{6}";
 
     public static File multipartToFile(MultipartFile multipart) throws ShadesException {
 
@@ -39,7 +48,15 @@ public class Utils {
     }
 
     public static Double shadesPrices(Double supplierPrice){
-        return supplierPrice + (supplierPrice * 0.15);
+
+        Double shadesSellingPrice;
+        if(supplierPrice <= 20){
+            shadesSellingPrice = supplierPrice + 1;
+        }else{
+            shadesSellingPrice = supplierPrice + (supplierPrice * 0.05);
+        }
+
+        return shadesSellingPrice;
     }
 
     public static Double fragXShippingCost(int quantity){
@@ -147,11 +164,17 @@ public class Utils {
             }else{
                 Collection<InventoryEntity> collection = currProductsMultiMap.get(userItem.getSku());
                 InventoryEntity databaseProduct = collection.stream().findAny().get();
-                if(databaseProduct.getShadesSellingPrice() > userItem.getShadesSellingPrice()){
+                /*if(databaseProduct.getShadesSellingPrice() > userItem.getShadesSellingPrice()){
                     userItem.setStatus("Increase to " + databaseProduct.getShadesSellingPrice());
                 }else if(userItem.getShadesSellingPrice() > databaseProduct.getShadesSellingPrice()){
                     userItem.setStatus("Decrease to "  + databaseProduct.getShadesSellingPrice());
-                }
+                }*/
+                Double suggestedPrice = Utils.getProductRecommendedPrice(databaseProduct.getShadesSellingPrice(), databaseProduct.getShippingCost());
+                if(suggestedPrice > userItem.getShadesSellingPrice()){
+                    userItem.setStatus("Alert - Suggested Price " + suggestedPrice);
+                }/*else if(userItem.getShadesSellingPrice() > databaseProduct.getShadesSellingPrice()){
+                    userItem.setStatus("Decrease to "  + databaseProduct.getShadesSellingPrice());
+                }*/
                 if(databaseProduct.getQuantity() == 0 && userItem.getQuantity() > 0){
                     userItem.setStatus("Out of Stock");
                 }
@@ -160,6 +183,7 @@ public class Utils {
                     userItem.setStatus(temp);
                 }
             }
+            userItem.setSku(userItem.getSupplierProductId());
         };
 
         userItems.stream().forEach(compare);
@@ -211,5 +235,36 @@ public class Utils {
         databaseProductList.stream().forEach(compare);
 
         return resultProductMultimap.values().stream().collect(Collectors.toList());
+    }
+
+    public static String parseSku(String sku){
+        String parsedSku = StringUtils.removeAll(StringUtils.strip(sku, "SKU:").trim(), "(\\s+)(\\d+)|(\\s+)([Xx])(\\d+)").trim();
+        parsedSku = StringUtils.removePattern(parsedSku, "[_]+\\d++").trim();
+        return parsedSku;
+    }
+
+    public static Double getProductRecommendedPrice(Double shadesSalePrice, Double shippingCost){
+        Double profit15Percent = (shadesSalePrice * 0.15) + shadesSalePrice;
+        Double includedShipping = profit15Percent + shippingCost;
+        Double marketProfit = (includedShipping * 0.18) + includedShipping;
+        return marketProfit;
+
+    }
+
+    public static String cellNumberToString(Double numericCellValue) {
+        DecimalFormat format = new DecimalFormat("0");
+
+        return String.valueOf(format.format(numericCellValue));
+    }
+
+    public static Enum<Enumerations.Suppliers> supplierChecker(String sku2Check){
+
+        if(Pattern.compile(FRAGX).matcher(sku2Check).matches()){
+            return FXEnum;
+        }else if(Pattern.compile(TELE_DYN).matcher(sku2Check).matches()){
+            return TDEnum;
+        }else{
+            return AZEnum;
+        }
     }
 }

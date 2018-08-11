@@ -1,0 +1,118 @@
+<table class="a-normal a-spacing-none a-spacing-top-small table-border">
+    <tbody>
+        <tr class="a-spacing-top-extra-large table-border">
+            <th class="a-text-center a-align-bottom table-border a-nowrap"><span class="a-letter-space"></span>Quantity
+                <span class="a-letter-space"></span>
+            </th>
+            <th class="a-align-center table-border a-nowrap">Product Details</th>
+            <th class="a-text-center a-align-center table-border a-nowrap">Unit price</th>
+            <th class="a-text-center a-align-center table-border a-nowrap">Order Totals</th>
+        </tr>
+        <tr>
+            <td class="a-text-center table-border">2</td>
+            <td class="a-text-left table-border">
+                <span class="a-text-bold">Lucky Number 6 by Liz Claiborne - Eau De Parfum Spray 3.4 oz</span>
+                <br>
+                <div class="a-row">
+                    <span class="a-text-bold">SKU:</span>
+                    <span>427239 1</span>
+                </div>
+                <div class="a-row">
+                    <span class="a-text-bold">ASIN:</span>
+                    <span>B00P7D9CHM</span>
+                </div>
+                <div class="a-row">
+                    <span class="a-text-bold">Condition:</span>
+                    <span>New</span>
+                </div>
+                <div class="a-row">
+                    <span class="a-text-bold">Listing ID:</span>
+                    <span id="myo-order-details-product-listing-id">0531U153S4E</span>
+                </div>
+                <div class="a-row">
+                    <span class="a-text-bold">Order Item ID:</span>
+                    <span id="myo-order-details-product-order-item-id">18461773751250</span>
+                </div>
+            </td>
+            <td class="a-text-center table-border">$26.99</td>
+            <td class="table-border">
+                <div class="a-section a-spacing-none a-padding-base">
+                    <table class="a-normal a-spacing-none">
+                        <tbody>
+                            <tr>
+                                <th class="a-span6">
+                                    <span class="a-nowrap">Item subtotal</span>
+                                </th>
+                                <td class="a-span6 a-text-right  myo-wrap">
+                                    <span id="myo-order-details-item-sub-total">$53.98</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="a-span6 myoTotalBorder">
+                                    <span class="a-text-bold a-nowrap">Item total</span>
+                                </th>
+                                <td class="a-span6 a-text-right myoTotalBorder myo-wrap">
+                                    <span id="myo-order-details-item-total" class="a-text-bold">$53.98</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td class="a-text-center table-border">2</td>
+            <td class="a-text-left table-border">
+                <span class="a-text-bold">Lucky Number 6 by Liz Claiborne Eau De Parfum Spray (Tester) 3.4 oz for Women
+                    - 100% Authentic
+                </span>
+                <br>
+                <div class="a-row">
+                    <span class="a-text-bold">SKU:</span>
+                    <span>451860 1</span>
+                </div>
+                <div class="a-row">
+                    <span class="a-text-bold">ASIN:</span>
+                    <span>B01I54K1J2</span>
+                </div>
+                <div class="a-row">
+                    <span class="a-text-bold">Condition:</span>
+                    <span>New</span>
+                </div>
+                <div class="a-row">
+                    <span class="a-text-bold">Listing ID:</span>
+                    <span id="myo-order-details-product-listing-id">0531U13Y32A</span>
+                </div>
+                <div class="a-row">
+                    <span class="a-text-bold">Order Item ID:</span>
+                    <span id="myo-order-details-product-order-item-id">56790962053450</span>
+                </div>
+            </td>
+            <td class="a-text-center table-border">$26.99</td>
+            <td class="table-border">
+                <div class="a-section a-spacing-none a-padding-base">
+                    <table class="a-normal a-spacing-none">
+                        <tbody>
+                            <tr>
+                                <th class="a-span6">
+                                    <span class="a-nowrap">Item subtotal</span>
+                                </th>
+                                <td class="a-span6 a-text-right  myo-wrap">
+                                    <span id="myo-order-details-item-sub-total">$53.98</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="a-span6 myoTotalBorder">
+                                    <span class="a-text-bold a-nowrap">Item total</span>
+                                </th>
+                                <td class="a-span6 a-text-right myoTotalBorder myo-wrap">
+                                    <span id="myo-order-details-item-total" class="a-text-bold">$53.98</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>

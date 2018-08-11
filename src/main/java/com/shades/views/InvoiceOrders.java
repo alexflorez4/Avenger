@@ -39,9 +39,8 @@ public class InvoiceOrders extends AbstractXlsxView {
         header.createCell(4).setCellValue("Price");
         header.createCell(5).setCellValue("Shipping Cost");
         header.createCell(6).setCellValue("Total");
-        header.createCell(7).setCellValue("Market");
-        header.createCell(8).setCellValue("Date");
-        header.createCell(9).setCellValue("Seller");
+        header.createCell(7).setCellValue("Date");
+        header.createCell(8).setCellValue("Seller");
 
 
         // Create data cells
@@ -55,9 +54,8 @@ public class InvoiceOrders extends AbstractXlsxView {
             orderRow.createCell(4).setCellValue(next.getShadesPrice());
             orderRow.createCell(5).setCellValue(next.getShippingCost());
             orderRow.createCell(6).setCellValue(next.getTotalPriceShades());
-            orderRow.createCell(7).setCellValue(Enumerations.Markets.getMarketName(next.getMarketId()));
-            orderRow.createCell(8).setCellValue(AVE_FORMAT.format(next.getOrderDate()));
-            orderRow.createCell(9).setCellValue(Enumerations.Sellers.getSellerName(next.getSellerId()));
+            orderRow.createCell(7).setCellValue(AVE_FORMAT.format(next.getOrderDate()));
+            orderRow.createCell(8).setCellValue(Enumerations.Sellers.getSellerName(next.getSellerId()));
         }
     }
 }

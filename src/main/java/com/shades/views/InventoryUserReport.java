@@ -21,7 +21,7 @@ public class InventoryUserReport extends AbstractXlsxView{
         response.setHeader("Content-Disposition", "attachment; filename=\"myInventory.xlsx\"");
 
         List<InventoryEntity> items = (List) map.get("items");
-        System.out.println("Items: " + items.size());
+
         // create excel xls sheet
         Sheet sheet = workbook.createSheet("Inventory");
 
@@ -32,7 +32,6 @@ public class InventoryUserReport extends AbstractXlsxView{
         header.createCell(2).setCellValue("Quantity");
         header.createCell(3).setCellValue("Status");
 
-        System.out.println("After setting headers");
         // Create data cells
         int rowCount = 1;
         for(InventoryEntity next : items){
@@ -43,6 +42,5 @@ public class InventoryUserReport extends AbstractXlsxView{
             orderRow.createCell(3).setCellValue(StringUtils.isBlank(next.getStatus()) ? StringUtils.EMPTY : next.getStatus() );
 
         }
-        System.out.println("done!!!");
     }
 }

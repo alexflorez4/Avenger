@@ -47,7 +47,7 @@ public class FragxService {
                         501,
                         product.getWholesalePriceUSD(),
                         Utils.shadesPrices(product.getWholesalePriceUSD()),
-                        5.0,
+                        6.0,
                         null,
                         new Timestamp(System.currentTimeMillis()),
                         0.0,

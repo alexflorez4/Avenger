@@ -29,7 +29,7 @@
                         <div class="alert alert-info">
                             The following orders could not be processed:
                             <c:forEach items="${failingOrdersSet}" var="order">
-                                <li>Amazon Order Id: ${order.marketOrderId}</li>
+                                <li>Amazon Order Id: ${order.marketOrderId} - ${order.observations}</li>
                             </c:forEach>
                         </div>
                     </c:when>

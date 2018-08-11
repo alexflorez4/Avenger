@@ -1,6 +1,7 @@
 package com.shades.utilities;
 
 import Entities.OrderEntity;
+import com.shades.exceptions.ShadesException;
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -10,19 +11,16 @@ import org.jsoup.select.Elements;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.regex.Pattern;
-
-import static com.shades.utilities.Enumerations.Suppliers.AZEnum;
-import static com.shades.utilities.Enumerations.Suppliers.FXEnum;
-import static com.shades.utilities.Enumerations.Suppliers.TDEnum;
 
 public class ParseAmzOrder {
 
-    private static final String TELE_DYN = "([A-Za-z]{2,3})([-])(\\d+\\w+)(//s)";
-    private static final String FRAGX = "[0-9]{6}";
+    private static int nextShadesOrderId;
 
-    public List<OrderEntity> parse(File file, int sellerId, int nextOrderId){
+    public List<OrderEntity> parse(File file, int sellerId, int nextOrderId) throws ShadesException {
+
+        nextShadesOrderId = nextOrderId;
 
         List<OrderEntity> orders = new ArrayList<>();
         Document doc;
@@ -38,6 +36,7 @@ public class ParseAmzOrder {
 
                 //Seller Id:
                 order.setSellerId(sellerId);
+                order.setSellerName(Enumerations.Sellers.getSellerName(sellerId));
 
                 //Market Id:
                 order.setMarketId(100);
@@ -45,118 +44,144 @@ public class ParseAmzOrder {
                 //Amazon order id:
                 Elements orderId = nextElm.getElementsByAttributeValueMatching("class", "a-section myo-orderId");
 
-
                 if(StringUtils.isBlank(orderId.text()))
                     continue;
-
-                order.setOrderId(nextOrderId);
-                nextOrderId++;
 
                 String amzOrderId = StringUtils.strip(orderId.text(), "Order ID:");
                 order.setMarketOrderId(amzOrderId);
 
-                Elements addressElm = nextElm.getElementsByAttributeValueMatching("class", "a-section myo-address");
+                Elements shippingInfo = nextElm.getElementsByClass("a-section a-spacing-none a-padding-mini table-border");
+                processElementsShippingInfo(order, shippingInfo);
 
-                String orderAddressHtml = addressElm.html();
-                String addRem = StringUtils.substringAfter(orderAddressHtml, "<span id=\"myo-order-details-buyer-address\" class=\"myo-wrap\">");
-
-                //Buyer name:
-                String buyerName = StringUtils.substringBefore(addRem, "<br>").trim();
-                order.setBuyerName(buyerName);
-                addRem = StringUtils.substringAfter(addRem, "<br>");
-
-                //Street
-                String address = StringUtils.substringBefore(addRem, "<br>").trim();
-                order.setStreet(address);
-                addRem = StringUtils.substringAfter(addRem, "<br>");
-
-                //City
-                String city = StringUtils.substringBefore(addRem, "<span").trim().replace(",","");
-                city = StringUtils.replace(city, "<br>", "-");
-                order.setCity(city);
-                addRem = StringUtils.substringAfter(addRem, "<span class=\"a-letter-space\">");
-
-                //Street2
-                String addressOther = StringUtils.substringBefore(addRem, "</span>").trim();
-                order.setStreet2(addressOther);
-                addRem = StringUtils.substringAfter(addRem, "</span>");
-
-                //State
-                String state = StringUtils.substringBefore(addRem, "<span").trim();
-                order.setState(state);
-                addRem = StringUtils.substringAfter(addRem, "<span class=\"a-letter-space\">");
-
-                //Other
-                String stateOther = StringUtils.substringBefore(addRem, "</span").trim();
-                order.setOther(stateOther);
-                addRem = StringUtils.substringAfter(addRem, "</span>").trim();
-
-                String zipCode;
-                String country;
-
-                if(addRem.contains("<br>")){
-                    zipCode = StringUtils.substringBefore(addRem, "<br>").trim();
-                    addRem = StringUtils.substringAfter(addRem, "<br>");
-                    country = StringUtils.substringBefore(addRem, "</span>").trim();
-                }else{
-                    zipCode = StringUtils.substringBefore(addRem, "</span>").trim();
-                    country = "United States";
-                }
-
-                //Zip code
-                order.setZipCode(zipCode);
-
-                //Country
-                order.setCountry(country);
 
                 //Quantity:
-                Elements qty = nextElm.getElementsByAttributeValueMatching("class", "a-text-center table-border");
-                String quantity = qty.first().text();
-                order.setQuantity(Integer.valueOf(quantity));
+                Elements tableBodyElement = nextElm.getElementsByTag("tbody");
 
-                Elements orderDetails = nextElm.getElementsByAttributeValueMatching("class", "a-row");
-                List<String> details = orderDetails.eachText();
+                Element tableOrderDetails = tableBodyElement.get(0);
+                Elements productDetailsTableRows = tableOrderDetails.children();
 
-                //Sku:
-                String sku = details.stream().filter(s-> s.contains("SKU:")).reduce("", String::concat).trim();
-                sku = StringUtils.removeAll(StringUtils.strip(sku, "SKU:").trim(), "(\\s+)(\\d+)|(\\s+)([Xx])(\\d+)").trim();
-                sku = StringUtils.removePattern(sku, "[_]+\\d++").trim();
-                order.setSku(sku);
+                //Process single order
+                if(productDetailsTableRows.size() == 2){
+                    Element orderDetail = productDetailsTableRows.get(1);
+                    processSingleOrderDetails(order, orderDetail, orders);
+                }else {
 
-                //ASIN
-                String asin = details.stream().filter(s-> s.contains("ASIN:")).reduce("", String::concat).trim();
-                asin = StringUtils.removeAll(asin, "ASIN:").trim();
-                order.setAsin(asin);
+                    //Table header
+                    Iterator productDetailsIterator = productDetailsTableRows.iterator();
+                    productDetailsIterator.next();
 
-                //Used for supplier name - String listingId = details.stream().filter(s-> s.contains("Listing ID:")).reduce("", String::concat).trim();
+                    //First Order
+                    Element firstOrderDetail = (Element) productDetailsIterator.next();
+                    OrderEntity firstMultiOrder = new OrderEntity(order);
+                    firstMultiOrder.setObservations("MULTI-ORDER: " + order.getMarketOrderId());
+                    processSingleOrderDetails(firstMultiOrder, firstOrderDetail, orders);
 
-                //Market Sold Amount
-                String total = details.stream().filter(s-> s.contains("Grand total: $")).reduce("", String::concat).trim();
-                total = StringUtils.replaceAll(total, "Grand total:", "").trim();
-                total = StringUtils.removeFirst(total, "[^A-Za-z0-9.]").trim();
-                order.setMarketSoldAmount(Double.valueOf(total));
-
-                Enumerations.Suppliers suppEnum = (Enumerations.Suppliers) supplierChecker(sku);
-                int supplierId = suppEnum.getSupplierId();
-                order.setSupplierId(supplierId);
-
-                orders.add(order);
+                    //Next Orders
+                    while (productDetailsIterator.hasNext()){
+                        Element orderDetail = (Element) productDetailsIterator.next();
+                        OrderEntity multiOrder = new OrderEntity(order);
+                        multiOrder.setObservations("MULTI-ORDER: " + order.getMarketOrderId());
+                        multiOrder.setMarketOrderId(null);
+                        processSingleOrderDetails(multiOrder, orderDetail, orders);
+                    }
+                }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new ShadesException("Error parsing orders in bulk.");
         }
 
         return orders;
     }
 
-    public static Enum<Enumerations.Suppliers> supplierChecker(String sku2Check){
+    private void processElementsShippingInfo(OrderEntity order, Elements shippingElms) throws ShadesException {
 
-        if(Pattern.compile(FRAGX).matcher(sku2Check).matches()){
-            return FXEnum;
-        }else if(Pattern.compile(TELE_DYN).matcher(sku2Check).matches()){
-            return TDEnum;
-        }else{
-            return AZEnum;
+        String orderAddressHtml = shippingElms.html();
+        String addRem = StringUtils.substringAfter(orderAddressHtml, "<span id=\"myo-order-details-buyer-address\" class=\"myo-wrap\">");
+
+        //Buyer name:
+        String buyerName = StringUtils.substringBefore(addRem, "<br>").trim();
+        order.setBuyerName(buyerName);
+        addRem = StringUtils.substringAfter(addRem, "<br>");
+
+        //Street and City
+        String streetAndCity = StringUtils.substringBefore(addRem, ",<span");
+        String [] streetAndCityArr = StringUtils.splitByWholeSeparator(streetAndCity, "<br>");
+
+        if(streetAndCityArr.length == 2){
+            order.setStreet(streetAndCityArr[0].trim());
+            order.setCity(streetAndCityArr[1].trim());
+        }else if(streetAndCityArr.length == 3){
+            order.setStreet(streetAndCityArr[0].trim());
+            order.setStreet2(streetAndCityArr[1].trim());
+            order.setCity(streetAndCityArr[2].trim());
+        }else {
+            throw new ShadesException("Error parsing address in street and city");
         }
+        addRem = StringUtils.substringAfter(addRem, "<span class=\"a-letter-space\"></span>").trim();
+
+        //State
+        String state = StringUtils.substringBefore(addRem, "<span class=\"a-letter-space\"></span>").trim();
+        order.setState(state);
+        addRem = StringUtils.substringAfter(addRem, "<span class=\"a-letter-space\"></span>");
+
+        String zipAndCountry = StringUtils.substringBefore(addRem, "</span>").trim();
+        String [] zipAndCountryArr = StringUtils.splitByWholeSeparator(zipAndCountry, "<br>");
+
+        if(zipAndCountryArr.length == 1){
+            order.setZipCode(zipAndCountryArr[0].trim());
+            order.setCountry("United States");
+        }else if(zipAndCountryArr.length == 2){
+            order.setZipCode(zipAndCountryArr[0].trim());
+            order.setCountry(zipAndCountryArr[1].trim());
+        }else{
+            throw new ShadesException("Error parsing address in zip & country");
+        }
+
+        addRem = StringUtils.substringAfter(addRem, "Seller Name:");
+        String [] otherShippingDetails = StringUtils.substringsBetween(addRem, "<span>", "</span>");
+
+        //Service
+        order.setShippingService(otherShippingDetails[1]);
     }
+
+    private void processSingleOrderDetails(OrderEntity order, Element orderDetail, List<OrderEntity> orders) {
+
+        //Shades Order Id
+        order.setOrderId(nextShadesOrderId);
+
+        String detail = orderDetail.html();
+
+        //Quantity
+        String quantity = StringUtils.substringBetween(detail, "<td class=\"a-text-center table-border\">", "</td>");
+        order.setQuantity(Integer.valueOf(quantity));
+
+        //SKU
+        String detRem = StringUtils.substringAfter(detail, "SKU:");
+        String sku = StringUtils.substringBetween(detRem, "<span>", "</span>").trim();
+        order.setSku(Utils.parseSku(sku));
+
+        //ASIN
+        detRem = StringUtils.substringAfter(detRem, "ASIN:");
+        String asin = StringUtils.substringBetween(detRem, "<span>", "</span>").trim();
+        order.setAsin(asin);
+
+        //Market Listing ID
+        detRem = StringUtils.substringAfter(detRem, "Listing ID:");
+        String marketListingId = StringUtils.substringBetween(detRem, "<span id=\"myo-order-details-product-listing-id\">", "</span>").trim();
+        order.setMarketListingId(marketListingId);
+
+        //Market Sold Amount:
+        detRem = StringUtils.substringAfter(detRem, "Item total");
+        String total = StringUtils.substringBetween(detRem, "<span id=\"myo-order-details-item-total\" class=\"a-text-bold\">", "</span>");
+        total = StringUtils.removeFirst(total, "[^A-Za-z0-9.]").trim();
+        order.setMarketSoldAmount(Double.valueOf(total));
+
+        //Supplier
+        Enumerations.Suppliers suppEnum = (Enumerations.Suppliers) Utils.supplierChecker(sku);
+        order.setSupplierId(suppEnum.getSupplierId());
+
+        orders.add(order);
+        nextShadesOrderId++;
+    }
+
 }

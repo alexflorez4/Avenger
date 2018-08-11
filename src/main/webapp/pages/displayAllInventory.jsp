@@ -2,7 +2,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
-<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -17,10 +17,11 @@
 
 <div class="content-wrapper">
     <div class="container-fluid">
-        <h1>Completed Orders</h1>
+        <h1>Staged Orders</h1>
         <hr>
 
         <div class="panel-body">
+
             <div class="row">
                 <div class="col-lg-12 bottom-buffer">
 
@@ -29,46 +30,26 @@
                             <i class="fa fa-table"></i> Orders </div>
                         <div class="card-body">
                             <div class="table-responsive">
-
                                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                                     <thead>
                                     <tr>
-                                        <th>No</th>
-                                        <th>Market Order id</th>
-                                        <th>Tracking</th>
                                         <th>SKU</th>
+                                        <th>Price</th>
                                         <th>Quantity</th>
-                                        <th>Buyer Name</th>
-                                        <th>Street</th>
-                                        <th>Street2/Apt</th>
-                                        <th>City</th>
-                                        <th>State</th>
-                                        <th>Zip Code</th>
-                                        <th>Country</th>
-                                        <th>Observations</th>
-                                        <th>Seller</th>
+                                        <th>Est Shipping</th>
+                                        <th>Suggested $</th>
                                     </tr>
                                     </thead>
                                     <tbody>
-                                        <c:forEach items="${orders}" var="order">
-                                            <tr>
-                                                <td>${order.orderId}</td>
-                                                <td>${order.marketOrderId}</td>
-                                                <c:set var="trackingId">${order.trackingId}</c:set>
-                                                <td><c:out value="${trackingId}"/></td>
-                                                <td>${order.sku}</td>
-                                                <td>${order.quantity}</td>
-                                                <td>${order.buyerName}</td>
-                                                <td>${order.street}</td>
-                                                <td>${order.street2}</td>
-                                                <td>${order.city}</td>
-                                                <td>${order.state}</td>
-                                                <td>${order.zipCode}</td>
-                                                <td>${order.country}</td>
-                                                <td>${order.observations}</td>
-                                                <td>${order.sellerName}</td>
-                                            </tr>
-                                        </c:forEach>
+                                    <c:forEach items="${items}" var="items">
+                                        <tr>
+                                            <td>${items.sku}</td>
+                                            <td>${items.shadesSellingPrice}</td>
+                                            <td>${items.quantity}></td>
+                                            <td>${items.shippingCost}</td>
+                                            <td>${items.suggestedPrice}</td>
+                                        </tr>
+                                    </c:forEach>
                                     </tbody>
                                 </table>
                             </div>

@@ -23,12 +23,15 @@ public class clientTestExpressUpload {
             //List<OrderEntity> orders = appServices.getSellerPendingOrders();
             //System.out.println(orders.size());
 
-            File updatedTrackings = new File("C:\\Users\\alexf\\Desktop\\Copy of staged_orders-4.xlsx");
+            File updatedTrackings = new File("C:\\Users\\alexf\\Documents\\Development\\Projects\\Shades\\Issues\\avenger 08092018.xlsx");
             appServices.updateTrackingIds(updatedTrackings);
 
 
             //File userInventory = new File("C:\\Users\\alexf\\Documents\\Development\\Projects\\Shades\\Inventory Comparison.xlsx");
             //appServices.compareUserInventory(userInventory);
+
+            //File azInventory = new File("C:\\Users\\alexf\\Downloads\\AZ08062018.xlsx");
+            //appServices.updateInventory(azInventory, 500);
         }catch (Exception e){
             System.out.println("Exception: \n\n");
             System.out.println(e);

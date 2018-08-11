@@ -5,7 +5,9 @@ public class Enumerations {
 
     public enum Sellers{
 
-        Welse(1, "Welse"), Shades(2, "Shades"), Sunsky(3, "Sunsky"), Wayuu(4, "Wayuu");
+        Welse(1, "Welse"), Shades(2, "Shades"), Sunsky(3, "Sunsky"), Wayuu(4, "Wayuu"),
+        Phil(5, "Phil"), Melody(6, "Melody"), Lauren(7, "Lauren"), Cooper(8, "Cooper"),
+        Arse(9, "Arse"), Arca(10, "Arca"), Shopy(11, "Shopy"), Corner(12, "Corner");
 
         Sellers(int sellerId, String sellerName) {
             this.sellerId = sellerId;
@@ -34,8 +36,24 @@ public class Enumerations {
                     return Sunsky.getSellerName();
                 case 4:
                     return Wayuu.getSellerName();
+                case 5:
+                    return Phil.getSellerName();
+                case 6:
+                    return Melody.getSellerName();
+                case 7:
+                    return Lauren.getSellerName();
+                case 8:
+                    return Cooper.getSellerName();
+                case 9:
+                    return Arse.getSellerName();
+                case 10:
+                    return Arca.getSellerName();
+                case 11:
+                    return Shopy.getSellerName();
+                case 12:
+                    return Corner.getSellerName();
                 default:
-                    return "Supplier Not found";
+                    return "Seller Not found";
             }
         }
     }

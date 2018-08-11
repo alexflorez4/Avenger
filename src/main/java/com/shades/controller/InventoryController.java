@@ -3,7 +3,6 @@ package com.shades.controller;
 import Entities.InventoryEntity;
 import Entities.OrderEntity;
 import com.shades.exceptions.ShadesException;
-import com.shades.services.az.AzProcess;
 import com.shades.services.fragx.FragxService;
 import com.shades.services.misc.AppServices;
 import com.shades.utilities.Utils;
@@ -45,7 +44,11 @@ public class InventoryController {
     }
 
     @RequestMapping(value = "/pages/inventoryUpdate", method = RequestMethod.POST)
-    public ModelAndView processAZInventoryUpdate(@RequestParam("azFile") MultipartFile file, @RequestParam("supplier") int supplierId){
+    public ModelAndView updateInventory(@RequestParam("azFile") MultipartFile file, @RequestParam("supplier") Integer supplierId){
+
+        if(supplierId == 0){
+            return new ModelAndView("inventoryUpdate", "status", "Please select a supplier");
+        }
 
         String rootPath = System.getProperty("catalina.home");
         File dir = new File(rootPath + File.separator + "uploads");
@@ -93,20 +96,11 @@ public class InventoryController {
         return new ModelAndView("orderManual","sku",sku);
     }
 
-
     @RequestMapping(value = "/singleOrder", method = RequestMethod.POST)
-    public ModelAndView newSingleOrder(
-            @RequestParam("orderNo") Integer orderNo,
-            @RequestParam("reference") String reference,
-            @RequestParam("itemQuantity") Integer quantity,
-            @RequestParam("bName") String buyerName,
-            @RequestParam("bAddress") String buyerAddress,
-            @RequestParam("bApt") String apartment,
-            @RequestParam("bCiti") String city,
-            @RequestParam("bState") String state,
-            @RequestParam("bZip") String zipCode,
-            @RequestParam("bCountry") String country,
-            @RequestParam("bNotes") String notes,
+    public ModelAndView newSingleOrder(@RequestParam("orderNo") Integer orderNo, @RequestParam("reference") String reference,
+            @RequestParam("itemQuantity") Integer quantity, @RequestParam("bName") String buyerName, @RequestParam("bAddress") String buyerAddress,
+            @RequestParam("bApt") String apartment, @RequestParam("bCiti") String city, @RequestParam("bState") String state,
+            @RequestParam("bZip") String zipCode, @RequestParam("bCountry") String country, @RequestParam("bNotes") String notes,
             @RequestParam("market") Integer marketId){
 
         OrderEntity order = new OrderEntity();
@@ -128,7 +122,7 @@ public class InventoryController {
             appServices.processNewSingleOrder(order);
 
         } catch (ShadesException e) {
-            status = "Error." + e;
+            status = "Error: " + e.getMessage();
             return new ModelAndView("orderManual", "status", status);
         }
         status = "success";
@@ -157,7 +151,6 @@ public class InventoryController {
         List<OrderEntity> completedOrders = appServices.getAllCompletedOrders();
         return new ModelAndView("completedOrders", "orders", completedOrders);
     }
-
 
     @RequestMapping("/allNewOrdersAdmin")
     public ModelAndView displayAllNewOrders() throws ShadesException {
@@ -271,14 +264,11 @@ public class InventoryController {
         return new ModelAndView(new InventoryUserReport(), "items", items);
     }
 
-
     @RequestMapping("/pages/downloadAllInventory")
     public ModelAndView downloadAllInventory() throws ShadesException {
         List<InventoryEntity> items = appServices.getAllInventory();
         return new ModelAndView(new InventoryAllProducts(), "items", items);
     }
-
-
 
     @RequestMapping("/stageOrder")
     public ModelAndView stageOrder(@RequestParam("orderToStage") String [] orderToStage){
@@ -297,7 +287,4 @@ public class InventoryController {
         OrderEntity order = appServices.getOrderById(Integer.valueOf(id));
         return new ModelAndView("editOrder", "order", order);
     }
-
-
-
 }

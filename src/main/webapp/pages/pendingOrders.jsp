@@ -34,7 +34,7 @@
                                     <thead>
                                     <tr>
                                         <th>No</th>
-                                        <th>Market Order id</th>
+                                        <th>Market Order Id</th>
                                         <th>SKU</th>
                                         <th>Quantity</th>
                                         <th>Buyer Name</th>
@@ -43,8 +43,8 @@
                                         <th>City</th>
                                         <th>State</th>
                                         <th>Zip Code</th>
-                                        <th>Other</th>
                                         <th>Country</th>
+                                        <th>Shipping</th>
                                         <th>Observations</th>
                                         <th>Edit</th>
                                     </tr>
@@ -56,14 +56,14 @@
                                                 <td>${order.marketOrderId}</td>
                                                 <td>${order.sku}</td>
                                                 <td>${order.quantity}</td>
-                                                <td>${order.buyerName}></td>
+                                                <td>${order.buyerName}</td>
                                                 <td>${order.street}</td>
                                                 <td>${order.street2}</td>
                                                 <td>${order.city}</td>
                                                 <td>${order.state}</td>
                                                 <td>${order.zipCode}</td>
-                                                <td>${order.other}</td>
                                                 <td>${order.country}</td>
+                                                <td>${order.shippingService}</td>
                                                 <td>${order.observations}</td>
                                                 <th><a href="<%=request.getContextPath()%>/editOrder/${order.orderId}">Edit</a> </th>
                                             </tr>
