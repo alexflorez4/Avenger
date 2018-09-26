@@ -1,6 +1,7 @@
 package com.shades.dao;
 
 
+import Entities.AsinEntity;
 import Entities.InventoryEntity;
 import Entities.OrderEntity;
 import com.shades.exceptions.ShadesException;
@@ -16,6 +17,8 @@ public interface InventoryDao {
     List<String> getAllSKUs();
 
     List<InventoryEntity> getAllProducts();
+
+    List<AsinEntity> getAllAsin();
 
     InventoryEntity findProductDetails(String sku) throws ShadesException;
 
@@ -44,4 +47,8 @@ public interface InventoryDao {
     List<OrderEntity> getAllCompletedOrders();
 
     List<OrderEntity> getOrdersForInvoice(String start, String end);
+
+    void insertAsin(List<AsinEntity> asins);
+
+    List<OrderEntity> checkPriorBuyer(String buyerName, String buyerAddress, int currentOrder);
 }

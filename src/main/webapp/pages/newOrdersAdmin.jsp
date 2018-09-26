@@ -35,6 +35,7 @@
                                         <tr>
                                             <th></th>
                                             <th>No</th>
+                                            <th>Warn</th>
                                             <th>SKU</th>
                                             <th>Quantity</th>
                                             <th>Buyer Name</th>
@@ -55,6 +56,7 @@
                                             <tr>
                                                 <th><input type="checkbox" name="orderToStage" value="${order.orderId}"></th>
                                                 <td>${order.orderId}</td>
+                                                <td>${order.warning}</td>
                                                 <td>${order.sku}</td>
                                                 <td>${order.quantity}</td>
                                                 <td>${order.buyerName}</td>

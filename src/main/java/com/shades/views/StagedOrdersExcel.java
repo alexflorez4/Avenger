@@ -38,10 +38,12 @@ public class StagedOrdersExcel extends AbstractXlsxView {
         header.createCell(8).setCellValue("Zip");
         header.createCell(9).setCellValue("Country");
         header.createCell(10).setCellValue("Supplier");
-        header.createCell(11).setCellValue("Supplier Order No");
-        header.createCell(12).setCellValue("Tracking No");
-        header.createCell(13).setCellValue("Shipping Cost");
-        header.createCell(14).setCellValue("Supplier Price");
+        header.createCell(11).setCellValue("Observations");
+        header.createCell(12).setCellValue("Supplier Order No");
+        header.createCell(13).setCellValue("Tracking No");
+        header.createCell(14).setCellValue("Shipping Cost");
+        header.createCell(15).setCellValue("Supplier Price");
+
 
         // Create data cells
         int rowCount = 1;
@@ -59,6 +61,7 @@ public class StagedOrdersExcel extends AbstractXlsxView {
             orderRow.createCell(8).setCellValue(next.getZipCode());
             orderRow.createCell(9).setCellValue(next.getCountry());
             orderRow.createCell(10).setCellValue(Enumerations.Suppliers.getSupplierName(next.getSupplierId()));
+            orderRow.createCell(11).setCellValue(StringUtils.isBlank(next.getObservations()) ? "" : next.getObservations());
         }
     }
 }

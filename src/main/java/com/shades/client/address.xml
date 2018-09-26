@@ -1,0 +1,45 @@
+<div class="a-section a-spacing-none a-padding-mini table-border">
+    <div class="a-row">
+        <div class="a-column a-span3">
+            <div class="a-section a-spacing-none a-spacing-top-micro a-padding-none">
+                <span class="a-text-bold">Shipping Address:</span>
+                <div class="a-section a-spacing-none a-spacing-top-micro a-padding-none">
+                    <hza:getweblabtreatment var="appendBuyerPONumberInAddress" treatment="MYO_MONS_BUYER_PO_IN_ADDRESS_162399" />
+                    <span id="myo-order-details-buyer-address" class="myo-wrap"> ARMANDO RODRIGUEZ <br> COND. VISTA SERENA 920 CARR. 175 APT. 6302<br> SAN JUAN,<span class="a-letter-space"></span> PUERTO RICO<span class="a-letter-space"></span> 00926 <br>Puerto Rico </span>
+                </div>
+            </div>
+        </div>
+        <div class="a-column a-span9 a-span-last">
+            <div class="a-row">
+                <div class="a-column a-span4">
+                    <div class="a-section a-spacing-none a-spacing-top-micro a-padding-none">
+                        <span> Order Date: </span>
+                    </div>
+                    <div class="a-section a-spacing-none a-spacing-top-micro a-padding-none">
+                        <span> Shipping Service: </span>
+                    </div>
+                    <div class="a-section a-spacing-none a-spacing-top-micro a-padding-none">
+                        <span> Buyer Name: </span>
+                    </div>
+                    <div class="a-section a-spacing-none a-spacing-top-micro a-padding-none">
+                        <span> Seller Name: </span>
+                    </div>
+                </div>
+                <div class="a-column a-span8 a-span-last">
+                    <div class="a-section a-spacing-none a-spacing-top-micro a-padding-none">
+                        <span>Mon, Aug 6, 2018</span>
+                    </div>
+                    <div class="a-section a-spacing-none a-spacing-top-micro a-padding-none">
+                        <span>Standard</span>
+                    </div>
+                    <div class="a-section a-spacing-none a-spacing-top-micro a-padding-none">
+                        <span id="myo-packing-slip-buyer-name">ARMANDO</span>
+                    </div>
+                    <div class="a-section a-spacing-none a-spacing-top-micro a-padding-none">
+                        <span>EA Group</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

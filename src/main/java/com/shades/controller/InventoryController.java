@@ -3,13 +3,11 @@ package com.shades.controller;
 import Entities.InventoryEntity;
 import Entities.OrderEntity;
 import com.shades.exceptions.ShadesException;
+import com.shades.model.AsinItem;
 import com.shades.services.fragx.FragxService;
 import com.shades.services.misc.AppServices;
 import com.shades.utilities.Utils;
-import com.shades.views.InventoryAllProducts;
-import com.shades.views.InventoryUserReport;
-import com.shades.views.InvoiceOrders;
-import com.shades.views.StagedOrdersExcel;
+import com.shades.views.*;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -86,7 +84,6 @@ public class InventoryController {
 
         return new ModelAndView("inventoryUpdate", "fragStatus", fragStatus);
     }
-
 
     @RequestMapping("/orders")
     public ModelAndView viewCart()
@@ -266,8 +263,14 @@ public class InventoryController {
 
     @RequestMapping("/pages/downloadAllInventory")
     public ModelAndView downloadAllInventory() throws ShadesException {
-        List<InventoryEntity> items = appServices.getAllInventory();
-        return new ModelAndView(new InventoryAllProducts(), "items", items);
+        logger.info("Getting all inventory");
+        try{
+            List<InventoryEntity> items = appServices.getAllInventory();
+            logger.info("Inventory size: " + items.size());
+            return new ModelAndView(new InventoryAllProducts(), "items", items);
+        }catch (Exception e){
+            throw new ShadesException("Failed getting all inventory " + e.getMessage());
+        }
     }
 
     @RequestMapping("/stageOrder")
@@ -286,5 +289,35 @@ public class InventoryController {
         System.out.println("Order id: " + id);
         OrderEntity order = appServices.getOrderById(Integer.valueOf(id));
         return new ModelAndView("editOrder", "order", order);
+    }
+
+    @RequestMapping(value = "/pages/marginAdjuster", method = RequestMethod.POST)
+    public ModelAndView marginAdjuster(@RequestParam("inventoryFile") MultipartFile file, @RequestParam("percentage") Integer percentage){
+
+        File serverFile;
+        List<InventoryEntity> items;
+        try {
+            serverFile = Utils.saveMultipartFileToServer(file);
+            items = appServices.compareUserInventory(serverFile, percentage);
+        } catch (IOException e) {
+            return new ModelAndView("inventoryUser", "status", "Error." + e);
+        }
+
+        return new ModelAndView(new InventoryUserReport(), "items", items);
+    }
+
+    @RequestMapping(value = "/pages/expressLister", method = RequestMethod.POST)
+    public ModelAndView expressLister(@RequestParam("asinFile") MultipartFile file){
+
+        File asinFile;
+        List<AsinItem> items;
+        try {
+            asinFile = Utils.saveMultipartFileToServer(file);
+            items = appServices.uploadAsin(asinFile);
+        } catch (IOException e) {
+            return new ModelAndView("inventoryUser", "status", "Error." + e);
+        }
+
+        return new ModelAndView(new ExpressAmzUploadFile(), "items", items);
     }
 }

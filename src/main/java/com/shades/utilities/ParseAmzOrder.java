@@ -174,11 +174,12 @@ public class ParseAmzOrder {
         detRem = StringUtils.substringAfter(detRem, "Item total");
         String total = StringUtils.substringBetween(detRem, "<span id=\"myo-order-details-item-total\" class=\"a-text-bold\">", "</span>");
         total = StringUtils.removeFirst(total, "[^A-Za-z0-9.]").trim();
+        total = StringUtils.remove(total, "CAD");
         order.setMarketSoldAmount(Double.valueOf(total));
 
         //Supplier
-        Enumerations.Suppliers suppEnum = (Enumerations.Suppliers) Utils.supplierChecker(sku);
-        order.setSupplierId(suppEnum.getSupplierId());
+        //Enumerations.Suppliers suppEnum = (Enumerations.Suppliers) Utils.supplierChecker(sku);
+        //order.setSupplierId(suppEnum.getSupplierId());
 
         orders.add(order);
         nextShadesOrderId++;

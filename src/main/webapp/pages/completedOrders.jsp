@@ -30,14 +30,14 @@
                         <div class="card-body">
                             <div class="table-responsive">
 
-                                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                <table class="table table-bordered" id="dataTable-completedOrders" width="100%" cellspacing="0">
                                     <thead>
                                     <tr>
                                         <th>No</th>
                                         <th>Market Order id</th>
                                         <th>Tracking</th>
                                         <th>SKU</th>
-                                        <th>Quantity</th>
+                                        <th>Qty</th>
                                         <th>Buyer Name</th>
                                         <th>Street</th>
                                         <th>Street2/Apt</th>
@@ -45,8 +45,9 @@
                                         <th>State</th>
                                         <th>Zip Code</th>
                                         <th>Country</th>
-                                        <th>Observations</th>
+                                        <th>Notes</th>
                                         <th>Seller</th>
+                                        <th>Date</th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -67,6 +68,7 @@
                                                 <td>${order.country}</td>
                                                 <td>${order.observations}</td>
                                                 <td>${order.sellerName}</td>
+                                                <td>${order.orderDate}</td>
                                             </tr>
                                         </c:forEach>
                                     </tbody>
@@ -93,6 +95,15 @@
     <!-- Custom scripts for this page-->
     <script src="<%=request.getContextPath()%>/resources/js/sb-admin-datatables.min.js"></script>
 
+    <!-- Page-Level Demo Scripts - Tables - Use for reference -->
+    <script>
+        $(document).ready(function() {
+            $('#dataTable-completedOrders').DataTable({
+                responsive: true,
+                order:[[0, "desc"]]
+            });
+        });
+    </script>
 </div>
 
 </body>

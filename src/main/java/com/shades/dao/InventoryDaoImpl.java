@@ -1,15 +1,22 @@
 package com.shades.dao;
 
+import Entities.AsinEntity;
 import Entities.InventoryEntity;
 import Entities.OrderEntity;
 import Entities.SellerEntity;
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.shades.exceptions.ShadesException;
+import com.shades.utilities.Utils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public class InventoryDaoImpl implements InventoryDao {
@@ -62,7 +69,13 @@ public class InventoryDaoImpl implements InventoryDao {
 
     @Override
     public List<InventoryEntity> getAllProducts() {
-        Query q = em.createNativeQuery("SELECT * FROM Inventory", InventoryEntity.class);
+        Query q = em.createNativeQuery("SELECT * FROM Inventory WHERE blocked = 0 OR blocked IS NULL;", InventoryEntity.class);
+        return q.getResultList();
+    }
+
+    @Override
+    public List<AsinEntity> getAllAsin(){
+        Query q = em.createNativeQuery("SELECT * FROM Asin  WHERE blocked = 0 OR blocked IS NULL", AsinEntity.class);
         return q.getResultList();
     }
 
@@ -85,21 +98,56 @@ public class InventoryDaoImpl implements InventoryDao {
     }
 
     @Override
+    public List<OrderEntity> checkPriorBuyer(String buyerName, String buyerAddress, int currentOrder) {
+        System.out.println(buyerName + " - " + currentOrder);
+        Query q = em.createNativeQuery("SELECT * FROM Orders WHERE  (buyerName LIKE ? OR street LIKE ?) AND orderId <> ?", OrderEntity.class);
+        q.setParameter(1, buyerName);
+        q.setParameter(2, buyerAddress);
+        q.setParameter(3, currentOrder);
+        return q.getResultList();
+    }
+
+    @Override
     public void placeNewOrder(OrderEntity order) throws ShadesException {
 
+        /** Begin: Check for inventory */
         InventoryEntity item = findProductDetails(order.getSku());
-
         if(item.getQuantity() < 1){
             throw new ShadesException("Sku " + item.getSku() + " is out of stock");
         }
 
+        /** Begin: Check for recurrent buyers*/
+        List<OrderEntity> matchingOrders = checkPriorBuyer("%"+ StringUtils.trim(order.getBuyerName())+"%",
+                "%"+StringUtils.trim(order.getStreet())+"%", order.getOrderId());
+        if(matchingOrders.size() > 0){
+            Set<String> newStringSet = new HashSet<>();
+
+            String orderObs = StringUtils.isNotBlank(order.getWarning()) ? order.getWarning() : StringUtils.EMPTY;
+            //orderObs = StringUtils.replace(orderObs, "WARNING CHECK ORDER No. ", StringUtils.EMPTY);
+            List<String> results = Splitter.on("-").trimResults().omitEmptyStrings().splitToList(orderObs);
+            results.stream().forEach(s -> newStringSet.add(s));
+            matchingOrders.stream().forEach(s -> newStringSet.add(String.valueOf(s.getOrderId())));
+
+            String updatedObservations = Joiner.on(" - ").skipNulls().join(newStringSet);
+
+            /*StringBuilder sb = new StringBuilder("WARNING CHECK ORDER No. ");
+            for(OrderEntity tempOrder : matchingOrders){
+                sb.append(tempOrder.getOrderId() + " - ");
+            }*/
+            order.setWarning(updatedObservations);
+        }
+
+        Double itemWeight = item.getWeight() == null ? 0.0 : item.getWeight();
+        Double shipping = Utils.calculateShippingCost(item.getSupplierId(), order.getQuantity(), itemWeight);
+        order.setShippingCost(shipping);
+
         Query q =  em.createNativeQuery("INSERT IGNORE INTO Orders (" +
                 "orderId, orderDate, sellerId, marketId, supplierId, marketOrderId, sku, marketListingId, asin, " +
                 "quantity, buyerName, street, street2, city, state, zipCode, country, supplierPrice,\n" +
-                "shadesPrice, shippingService, shippingCost, totalPriceShades, marketSoldAmount, currency, observations, sellerName)" +
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) " +
-                "ON DUPLICATE KEY UPDATE orderDate = ?, quantity = ?, buyerName = ? , street = ?, street2=?, " +
-                "city = ?, state = ?, shippingService = ?, zipCode = ?, country = ?, totalPriceShades = ?, observations = ?");
+                "shadesPrice, shippingService, shippingCost, totalPriceShades, marketSoldAmount, currency, observations, sellerName, warning)" +
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) " +
+                "ON DUPLICATE KEY UPDATE quantity = ?, buyerName = ? , street = ?, street2=?, " +
+                "city = ?, state = ?, shippingService = ?, zipCode = ?, country = ?, totalPriceShades = ?, observations = ?, shippingCost = ?");
 
         q.setParameter(1, order.getOrderId());
         q.setParameter(2, new Timestamp(System.currentTimeMillis()));
@@ -121,14 +169,14 @@ public class InventoryDaoImpl implements InventoryDao {
         q.setParameter(18, item.getSupplierPrice()); //Supplier price
         q.setParameter(19, item.getShadesSellingPrice()); //Shades price
         q.setParameter(20, order.getShippingService());
-        q.setParameter(21, item.getShippingCost()); //Shipping cost
+        q.setParameter(21, order.getShippingCost()); //Shipping cost
         q.setParameter(22, (item.getShadesSellingPrice() * order.getQuantity()) + item.getShippingCost()); //Total Price Shades
         q.setParameter(23, order.getMarketSoldAmount());
         q.setParameter(24, order.getCurrency());
         q.setParameter(25, order.getObservations());
         q.setParameter(26, order.getSellerName());
+        q.setParameter(27, order.getWarning());
 
-        q.setParameter(27, new Timestamp(System.currentTimeMillis()));
         q.setParameter(28, order.getQuantity());
         q.setParameter(29, order.getBuyerName());
         q.setParameter(30, order.getStreet());
@@ -140,6 +188,8 @@ public class InventoryDaoImpl implements InventoryDao {
         q.setParameter(36, order.getCountry());
         q.setParameter(37, (item.getShadesSellingPrice() * order.getQuantity()) + item.getShippingCost()); //Total Price Shades
         q.setParameter(38, order.getObservations());
+        q.setParameter(39, order.getShippingCost());
+
         q.executeUpdate();
     }
 
@@ -250,34 +300,44 @@ public class InventoryDaoImpl implements InventoryDao {
             if(order.getTrackingId() == null && dbOrder.getTrackingId() != null){
                 order.setTrackingId(dbOrder.getTrackingId());
             }
+
+            if(order.getSupplierPrice() == null && dbOrder.getSupplierPrice() != null){
+                order.setSupplierPrice(dbOrder.getSupplierPrice());
+            }
+
             if(order.getShippingCost() == null && dbOrder.getShippingCost() != null){
                 order.setShippingCost(dbOrder.getShippingCost());
             }else if(order.getShippingCost() == null){
                 order.setShippingCost(0.0);
             }
-            if(order.getSupplierPrice() == null && dbOrder.getSupplierPrice() != null){
-                order.setSupplierPrice(dbOrder.getSupplierPrice());
-            }
-            if(order.getShadesPrice() == null && dbOrder.getShadesPrice() != null){
-                order.setShadesPrice(dbOrder.getShadesPrice());
-            }
 
+            order.setShadesPrice(Utils.shadesPrices(dbOrder.getSupplierId(), order.getSupplierPrice()));
             order.setTotalPriceShades(order.getShadesPrice() + order.getShippingCost());
         });
 
-        Query q = em.createNativeQuery("UPDATE Orders SET orderDate=?, supplierOrderId=?, trackingId=?, shippingCost=?, supplierPrice=?," +
+        Query q = em.createNativeQuery("UPDATE Orders SET supplierOrderId=?, trackingId=?, shippingCost=?, supplierPrice=?," +
                 "shadesPrice=?, totalPriceShades=? WHERE orderId = ?");
 
         orderList.stream().forEach(order -> {
-            q.setParameter(1, new Timestamp(System.currentTimeMillis()));
-            q.setParameter(2, order.getSupplierOrderId());
-            q.setParameter(3, order.getTrackingId());
-            q.setParameter(4, order.getShippingCost());
-            q.setParameter(5, order.getSupplierPrice());
-            q.setParameter(6, order.getShadesPrice());
-            q.setParameter(7, order.getTotalPriceShades());
-            q.setParameter(8, order.getOrderId());
+            q.setParameter(1, order.getSupplierOrderId());
+            q.setParameter(2, order.getTrackingId());
+            q.setParameter(3, order.getShippingCost());
+            q.setParameter(4, order.getSupplierPrice());
+            q.setParameter(5, order.getShadesPrice());
+            q.setParameter(6, order.getTotalPriceShades());
+            q.setParameter(7, order.getOrderId());
             q.executeUpdate();
         });
+    }
+
+    public void insertAsin(List<AsinEntity> asins){
+        Query q = em.createNativeQuery("INSERT IGNORE INTO Asin (sku, asin) VALUES (?, ?)");
+
+        asins.stream().forEach((asinEntity -> {
+            q.setParameter(1, asinEntity.getSku());
+            q.setParameter(2, asinEntity.getAsin());
+            q.executeUpdate();
+        })
+        );
     }
 }

@@ -31,16 +31,22 @@ public class InventoryUserReport extends AbstractXlsxView{
         header.createCell(1).setCellValue("Price");
         header.createCell(2).setCellValue("Quantity");
         header.createCell(3).setCellValue("Status");
+        header.createCell(4).setCellValue("Suggested $");
 
-        // Create data cells
-        int rowCount = 1;
-        for(InventoryEntity next : items){
-            Row orderRow = sheet.createRow(rowCount++);
-            orderRow.createCell(0).setCellValue(next.getSku());
-            orderRow.createCell(1).setCellValue(next.getShadesSellingPrice());
-            orderRow.createCell(2).setCellValue(next.getQuantity());
-            orderRow.createCell(3).setCellValue(StringUtils.isBlank(next.getStatus()) ? StringUtils.EMPTY : next.getStatus() );
-
+        System.out.println("Items: " + items.size());
+        try {
+            // Create data cells
+            int rowCount = 1;
+            for (InventoryEntity next : items) {
+                Row orderRow = sheet.createRow(rowCount++);
+                orderRow.createCell(0).setCellValue(next.getSku());
+                orderRow.createCell(1).setCellValue(next.getShadesSellingPrice());
+                orderRow.createCell(2).setCellValue(next.getQuantity());
+                orderRow.createCell(3).setCellValue(StringUtils.isBlank(next.getStatus()) ? StringUtils.EMPTY : next.getStatus());
+                orderRow.createCell(4).setCellValue(next.getSuggestedPrice() == null ? 0 : next.getSuggestedPrice());
+            }
+        }catch (Exception e){
+            System.out.println(e.getMessage());
         }
     }
 }

@@ -45,6 +45,7 @@
                                         <th>Zip Code</th>
                                         <th>Country</th>
                                         <th>Shipping</th>
+                                        <th>Date</th>
                                         <th>Observations</th>
                                         <th>Edit</th>
                                     </tr>
@@ -64,8 +65,16 @@
                                                 <td>${order.zipCode}</td>
                                                 <td>${order.country}</td>
                                                 <td>${order.shippingService}</td>
+                                                <td>${order.orderDate}</td>
                                                 <td>${order.observations}</td>
-                                                <th><a href="<%=request.getContextPath()%>/editOrder/${order.orderId}">Edit</a> </th>
+                                                <c:choose>
+                                                    <c:when test="${order.processed == '0'}">
+                                                            <th><a href="<%=request.getContextPath()%>/editOrder/${order.orderId}">Edit</a> </th>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <th ><a aria-disabled="true">Staged</a> </th>
+                                                    </c:otherwise>
+                                                </c:choose>
                                             </tr>
                                         </c:forEach>
                                     </tbody>

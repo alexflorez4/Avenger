@@ -37,7 +37,8 @@ public class OrderEntity {
     private String currency;
     private String observations;
     private int processed;
-
+    private int cancelled;
+    private String warning;
 
     public OrderEntity() {
     }
@@ -347,6 +348,26 @@ public class OrderEntity {
 
     public void setProcessed(int proccessed) {
         this.processed = proccessed;
+    }
+
+    @Basic
+    @Column(name = "cancelled")
+    public int getCancelled() {
+        return cancelled;
+    }
+
+    public void setCancelled(int cancelled) {
+        this.cancelled = cancelled;
+    }
+
+    @Basic
+    @Column(name = "warning")
+    public String getWarning() {
+        return warning;
+    }
+
+    public void setWarning(String warning) {
+        this.warning = warning;
     }
 
     @Override

@@ -1,16 +1,21 @@
 package com.shades.services.misc;
 
 
+import Entities.AsinEntity;
 import Entities.InventoryEntity;
 import Entities.OrderEntity;
+import com.google.common.collect.Maps;
 import com.shades.dao.InventoryDao;
 import com.shades.exceptions.ShadesException;
+import com.shades.model.AsinItem;
 import com.shades.utilities.Enumerations;
 import com.shades.utilities.ParseAmzOrder;
 import com.shades.utilities.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.NumberToTextConverter;
+import org.apache.poi.util.StringUtil;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,7 +28,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.text.DecimalFormat;
 import java.util.*;
+import java.util.function.Consumer;
+
+import static com.shades.utilities.Utils.getRandomNumberInRange;
 
 @Transactional
 @Service
@@ -172,7 +181,7 @@ public class AppServices {
                                 }else if(cell.getCellTypeEnum().equals(CellType.NUMERIC)){
                                     order.setSupplierPrice(cell.getNumericCellValue());
                                 }
-                                order.setShadesPrice(Utils.shadesPrices(order.getSupplierPrice()));
+                                //order.setShadesPrice(Utils.shadesPrices(order.getSupplierId(), order.getSupplierPrice()));
                             }
                             break;
                         default:
@@ -207,6 +216,13 @@ public class AppServices {
         return Utils.getInventoryComparison(userItems, currentProductsList);
     }
 
+    public List<InventoryEntity> compareUserInventory(File serverFile, int margin) throws IOException {
+
+        List<InventoryEntity> userItems = getInventoryEntities(serverFile);
+        List<InventoryEntity> currentProductsList = inventoryDao.getAllProducts();
+        return Utils.getInventoryComparison(userItems, currentProductsList, margin);
+    }
+
     public List<InventoryEntity> compareAllUserInventory(File serverFile) throws IOException{
         List<InventoryEntity> userItems = getInventoryEntities(serverFile);
         List<InventoryEntity> currentProductsList = inventoryDao.getAllProducts();
@@ -235,20 +251,46 @@ public class AppServices {
 
                 switch (columnIndex){
                     case 0: //Item Sku
-                        userItem.setSupplierProductId(cell.getCellTypeEnum().equals(CellType.STRING) ? cell.getStringCellValue() : String.valueOf(cell.getNumericCellValue()));
-                        String sku = cell.getCellTypeEnum().equals(CellType.STRING) ? cell.getStringCellValue() : String.valueOf(cell.getNumericCellValue());
+                        String sku;
+                        if(cell.getCellTypeEnum().equals(CellType.NUMERIC)) {
+                            //sku = String.valueOf((int) cell.getNumericCellValue());
+                            sku = NumberToTextConverter.toText(cell.getNumericCellValue());
+                        }else if(StringUtils.isNotBlank(cell.getStringCellValue())){
+                            sku = cell.getStringCellValue();
+                        }else{
+                            continue;
+                        }
                         userItem.setSku(Utils.parseSku(sku));
+                        // TODO: 9/6/2018 sku is holding the old sku before parsing.  need to fix this
+                        userItem.setSupplierProductId(sku);
                         break;
                     case 1: //Wholesale Price
                         //Holds the seller price on markets
-                        userItem.setShadesSellingPrice(cell.getNumericCellValue());
+                        if(cell.getCellTypeEnum().equals(CellType.NUMERIC)){
+                            userItem.setShadesSellingPrice(cell.getNumericCellValue());
+                        }else if(cell.getCellTypeEnum().equals(CellType.BLANK)){
+                            userItem.setShadesSellingPrice(0.0);
+                        }
                         break;
                     case 2: //Quantity of seller on market
-                        userItem.setQuantity(new Double(cell.getNumericCellValue()).intValue());
+                        if(cell.getCellTypeEnum().equals(CellType.NUMERIC)){
+                            userItem.setQuantity(new Double(cell.getNumericCellValue()).intValue());
+                        }else if(cell.getCellTypeEnum().equals(CellType.BLANK)){
+                            userItem.setQuantity(0);
+                        }
                         break;
                     default:
                         break;
                 }
+            }
+            if(StringUtils.isBlank(userItem.getSku())){
+                continue;
+            }
+            if(userItem.getQuantity() == null){
+                userItem.setQuantity(0);
+            }
+            if(userItem.getShadesSellingPrice() == null){
+                userItem.setShadesSellingPrice(0.0);
             }
             userItems.add(userItem);
         }
@@ -290,7 +332,7 @@ public class AppServices {
 
                 switch (columnIndex){
                     case 0: //Item Sku
-                        item.setSku(cell.getCellTypeEnum().equals(CellType.STRING) ? cell.getStringCellValue() : String.valueOf(cell.getNumericCellValue()));
+                        item.setSku(cell.getCellTypeEnum().equals(CellType.STRING) ? cell.getStringCellValue() : String.valueOf((int)cell.getNumericCellValue()));
                         break;
                     case 1: //Wholesale Price
                         Double cost = cell.getNumericCellValue();
@@ -298,36 +340,16 @@ public class AppServices {
                             cost += 2;
                         }
                         item.setSupplierPrice(cost);
-                        item.setShadesSellingPrice(Utils.shadesPrices(cost));
+                        item.setShadesSellingPrice(Utils.shadesPrices(supplierId, cost));
                         break;
                     case 2: //Quantity
                         item.setQuantity(new Double(cell.getNumericCellValue()).intValue());
                         break;
                     case 3://Weight Per Unit
-
                         Double weight =  cell.getNumericCellValue();
                         item.setWeight(weight);
-
-                        if(supplierId == 501){
-                            item.setShippingCost(6.0);
-                        }else{
-                            if(weight <= 1){
-                                item.setShippingCost(7.50);
-                            }else if(weight <= 2){
-                                item.setShippingCost(10.80);
-                            }else if(weight <= 3){
-                                item.setShippingCost(15.00);
-                            }else if(weight <= 4){
-                                item.setShippingCost(17.00);
-                            }else if(weight <= 6){
-                                item.setShippingCost(18.00);
-                            }else if(weight <= 7){
-                                item.setShippingCost(20.00);
-                            }else {
-                                item.setShippingCost(99.00);
-                            }
-                            item.setSuggestedPrice(Utils.getProductRecommendedPrice(item.getShadesSellingPrice(), item.getShippingCost()));
-                        }
+                        item.setShippingCost(Utils.calculateShippingCost(supplierId, item.getQuantity(), weight));
+                        item.setSuggestedPrice(Utils.getProductRecommendedPrice(item.getShadesSellingPrice(), item.getShippingCost()));
                         break;
                     default:
                         break;
@@ -342,5 +364,103 @@ public class AppServices {
         List<InventoryEntity> itemsChanged = Utils.getDifferentItems(currentProductsList, newProductsList);
         inventoryDao.updateInventory(itemsChanged);
         return true;
+    }
+
+    public List<AsinItem> uploadAsin(File serverFile)throws IOException {
+
+        List<AsinEntity> userAsinList = new ArrayList<>();
+        Map<String, AsinEntity> userAsinMap = new HashMap<>();
+        List<InventoryEntity> dbProductList = inventoryDao.getAllProducts();
+        Map<String, InventoryEntity> dbProductsMap = Maps.newHashMap();
+        dbProductList.stream().forEach(product -> dbProductsMap.put(product.getSku(), product));
+
+        FileInputStream fileInputStream = new FileInputStream(serverFile);
+        Workbook workbook = new XSSFWorkbook(fileInputStream);
+
+        Sheet dataTypeSheet = workbook.getSheetAt(0);
+        Iterator<Row> iterator = dataTypeSheet.iterator();
+        iterator.next(); //skipping head row.
+
+        while ((iterator.hasNext())) {
+            Row currentRow = iterator.next();
+            Iterator<Cell> cellIterator = currentRow.iterator();
+            String sku = StringUtils.EMPTY;
+            String asin = StringUtils.EMPTY;
+
+            while (cellIterator.hasNext()) {
+                Cell cell = cellIterator.next();
+                int columnIndex = cell.getColumnIndex();
+                switch (columnIndex) {
+                    case 0:
+                        if(cell.getCellTypeEnum().equals(CellType.BLANK)){
+                            continue;
+                        }
+                        if(cell.getCellTypeEnum().equals(CellType.NUMERIC)) {
+                            sku = Utils.parseSku(NumberToTextConverter.toText(cell.getNumericCellValue()));
+                        }else{
+                            sku = Utils.parseSku(cell.getStringCellValue());
+                        }
+                        break;
+                    case 1:
+                        if(cell.getCellTypeEnum().equals(CellType.BLANK)){
+                            continue;
+                        }
+                        if(cell.getCellTypeEnum().equals(CellType.NUMERIC)) {
+                            asin = NumberToTextConverter.toText(cell.getNumericCellValue());
+                        }else{
+                            asin = cell.getStringCellValue();
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+            if(dbProductsMap.containsKey(sku) && StringUtils.isNotBlank(asin)) {
+                userAsinList.add(new AsinEntity(sku, asin));
+                userAsinMap.put(asin, new AsinEntity(sku, asin));
+            }
+        }
+
+        //Get Database existing asins
+        List<AsinEntity> dbAsinList = inventoryDao.getAllAsin();
+        Map<String, AsinEntity> dbAsinMap = new HashMap<>();
+        dbAsinList.stream().forEach(asinEntity -> dbAsinMap.put(asinEntity.getAsin(), asinEntity));
+
+        List<AsinEntity> asinToDB = new ArrayList<>();
+
+        //Compare with database asins
+        Consumer<AsinEntity> consumer = asinFile -> {
+            if(!dbAsinMap.containsKey(asinFile.getAsin())){
+                asinToDB.add(asinFile);
+            }
+        };
+        userAsinList.stream().forEach(consumer);
+        //Update db with new asins
+        inventoryDao.insertAsin(asinToDB);
+        //System.out.println("Asins to database: ");
+        for (AsinEntity ae : asinToDB){
+            System.out.println(ae.getSku() + " " + ae.getAsin());
+        }
+
+        List<AsinItem> asinToAmz = new ArrayList<>();
+        Consumer<AsinEntity> consumer1 = dbAsin -> {
+            if(!userAsinMap.containsKey(dbAsin.getAsin())){
+                InventoryEntity dbItem = dbProductsMap.get(dbAsin.getSku());
+                System.out.println(dbAsin.getSku());
+                String sku = dbAsin.getSku() + "_" + new Random().nextInt(999);
+                Double shipping = dbItem.getShippingCost() == null ? 9.99 : dbItem.getShippingCost();
+                Double sellingPrice = Utils.getProductRecommendedPrice(dbItem.getShadesSellingPrice(), shipping, 20) + new Random().nextFloat();
+                DecimalFormat df = new DecimalFormat("#.##");
+                sellingPrice = Double.valueOf(df.format(sellingPrice));
+                asinToAmz.add(new AsinItem(sku, dbAsin.getAsin(), 1, sellingPrice, "delete", "delete", 11, getRandomNumberInRange(3, 10),
+                        'a', 'n', 2));
+            }
+        };
+        try {
+            dbAsinList.stream().forEach(consumer1);
+        }catch (Exception e){
+            logger.info("Exception: " + e.getMessage() + " \nCause: " + e.getCause() + " \nTrace: " + e.getStackTrace());
+        }
+        return asinToAmz;
     }
 }

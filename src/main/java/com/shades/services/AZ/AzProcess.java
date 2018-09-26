@@ -68,7 +68,7 @@ public class AzProcess {
                     case 1: //Wholesale Price
                         Double cost = currentCell.getNumericCellValue();
                         azInventory.setSupplierPrice(cost);
-                        azInventory.setShadesSellingPrice(Utils.shadesPrices(cost));
+                        azInventory.setShadesSellingPrice(Utils.shadesPrices(supplierId, cost));
                         break;
                     case 2: //Quantity
                         azInventory.setQuantity(new Double(currentCell.getNumericCellValue()).intValue());

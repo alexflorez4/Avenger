@@ -57,43 +57,55 @@
             <%--end orders--%>
 
             <%--admin--%>
-            <%--<% if(session != null && session.getAttribute("roles").equals("2")) {%>--%>
-                <sec:authorize access="hasRole('ROLE_ADMIN')">
+            <sec:authorize access="hasRole('ROLE_ADMIN')">
+            <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Menu Levels">
+                <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse" href="#collapseAdminMulti"
+                   data-parent="#exampleAccordion">
+                    <i class="fa fa-fw fa-sitemap"></i>
+                    <span class="nav-link-text">Admin</span>
+                </a>
+                <ul class="sidenav-second-level collapse" id="collapseAdminMulti">
+                    <li>
+                        <a href="<%=request.getContextPath()%>/pages/inventoryUpdate.jsp">Inventory</a>
+                    </li>
+                    <li>
+                        <a class="nav-link-collapse collapsed" data-toggle="collapse" href="#collapseMultiOrders">Orders</a>
+                        <ul class="sidenav-third-level collapse" id="collapseMultiOrders">
+                            <li>
+                                <a href="<%=request.getContextPath()%>/allNewOrdersAdmin.do">New</a>
+                            </li>
+                            <li>
+                                <a href="<%=request.getContextPath()%>/stagedOrdersAdmin.do">Staged</a>
+                            </li>
+                            <li>
+                                <a href="<%=request.getContextPath()%>/completedOrdersAdmin.do">Completed</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="<%=request.getContextPath()%>/pages/invoices.jsp">Invoices</a>
+                    </li>
+                </ul>
+            </li>
+            </sec:authorize>
+            <%--end admin--%>
+
+            <%--extras--%>
+            <sec:authorize access="hasRole('ROLE_EXTRA')">
                 <li class="nav-item" data-toggle="tooltip" data-placement="right" title="Menu Levels">
-                    <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse" href="#collapseAdminMulti"
+                    <a class="nav-link nav-link-collapse collapsed" data-toggle="collapse" href="#collapseExtraMulti"
                        data-parent="#exampleAccordion">
                         <i class="fa fa-fw fa-sitemap"></i>
-                        <span class="nav-link-text">Admin</span>
+                        <span class="nav-link-text">Extras</span>
                     </a>
-                    <ul class="sidenav-second-level collapse" id="collapseAdminMulti">
+                    <ul class="sidenav-second-level collapse" id="collapseExtraMulti">
                         <li>
-                            <a href="<%=request.getContextPath()%>/pages/inventoryUpdate.jsp">Inventory</a>
+                            <a href="<%=request.getContextPath()%>/pages/marginControl.jsp">Margin Control</a>
                         </li>
-                        <li>
-                            <a class="nav-link-collapse collapsed" data-toggle="collapse" href="#collapseMultiOrders">Orders</a>
-                            <ul class="sidenav-third-level collapse" id="collapseMultiOrders">
-                                <li>
-                                    <a href="<%=request.getContextPath()%>/allNewOrdersAdmin.do">New</a>
-                                </li>
-                                <li>
-                                    <a href="<%=request.getContextPath()%>/stagedOrdersAdmin.do">Staged</a>
-                                </li>
-                                <li>
-                                    <a href="<%=request.getContextPath()%>/completedOrdersAdmin.do">Completed</a>
-                                </li>
-                            </ul>
-                        </li>
-                        <li>
-                            <a href="<%=request.getContextPath()%>/pages/invoices.jsp">Invoices</a>
-                        </li>
-                        <%--<li>--%>
-                            <%--<a href="#">Returns</a>--%>
-                        <%--</li>--%>
                     </ul>
                 </li>
-                </sec:authorize>
-            <%--<%}%>--%>
-            <%--end admin--%>
+            </sec:authorize>
+            <%--end extras--%>
 
         </ul>
         <ul class="navbar-nav sidenav-toggler">

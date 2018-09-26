@@ -103,7 +103,7 @@
                         <div class="form-group row">
                             <label for="bNotes" class="col-sm-4 col-form-label">Observations</label>
                             <div class="col-sm-8">
-                                <textarea class="form-control" id="bNotes" name="bNotes" value="${order.observations}"></textarea>
+                                <textarea class="form-control" id="bNotes" name="bNotes" value="${order.observations}">${order.observations}</textarea>
                             </div>
                         </div>
 

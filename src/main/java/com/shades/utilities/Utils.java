@@ -15,10 +15,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -31,8 +28,6 @@ import static com.shades.utilities.Enumerations.Suppliers.TDEnum;
 public class Utils {
 
     private static final Logger logger = Logger.getLogger(Utils.class);
-    private static final String TELE_DYN = "([A-Za-z]{2,3})([-])(\\d+\\w+)(//s)";
-    private static final String FRAGX = "[0-9]{6}";
 
     public static File multipartToFile(MultipartFile multipart) throws ShadesException {
 
@@ -47,8 +42,18 @@ public class Utils {
 
     }
 
-    public static Double shadesPrices(Double supplierPrice){
+    public static Double shadesPrices(int supplier, Double supplierPrice){
 
+        if(supplier == 501 || supplier == 503){
+            return shadesPriceForFragXProducts(supplierPrice);
+        }else{
+            Double shadesSellingPrice;
+            shadesSellingPrice = supplierPrice + (supplierPrice * 0.15);
+            return shadesSellingPrice;
+        }
+    }
+
+    public static Double shadesPriceForFragXProducts(Double supplierPrice){
         Double shadesSellingPrice;
         if(supplierPrice <= 20){
             shadesSellingPrice = supplierPrice + 1;
@@ -57,11 +62,6 @@ public class Utils {
         }
 
         return shadesSellingPrice;
-    }
-
-    public static Double fragXShippingCost(int quantity){
-        Double shippingCost = 4.95 + quantity;
-        return shippingCost;
     }
 
     public static List<InventoryEntity> getDifferentItems(List<InventoryEntity> currentProductList, List<InventoryEntity> newProductsList){
@@ -164,17 +164,12 @@ public class Utils {
             }else{
                 Collection<InventoryEntity> collection = currProductsMultiMap.get(userItem.getSku());
                 InventoryEntity databaseProduct = collection.stream().findAny().get();
-                /*if(databaseProduct.getShadesSellingPrice() > userItem.getShadesSellingPrice()){
-                    userItem.setStatus("Increase to " + databaseProduct.getShadesSellingPrice());
-                }else if(userItem.getShadesSellingPrice() > databaseProduct.getShadesSellingPrice()){
-                    userItem.setStatus("Decrease to "  + databaseProduct.getShadesSellingPrice());
-                }*/
+
                 Double suggestedPrice = Utils.getProductRecommendedPrice(databaseProduct.getShadesSellingPrice(), databaseProduct.getShippingCost());
                 if(suggestedPrice > userItem.getShadesSellingPrice()){
-                    userItem.setStatus("Alert - Suggested Price " + suggestedPrice);
-                }/*else if(userItem.getShadesSellingPrice() > databaseProduct.getShadesSellingPrice()){
-                    userItem.setStatus("Decrease to "  + databaseProduct.getShadesSellingPrice());
-                }*/
+                    userItem.setStatus("Alert - Under priced");
+                    userItem.setSuggestedPrice(suggestedPrice);
+                }
                 if(databaseProduct.getQuantity() == 0 && userItem.getQuantity() > 0){
                     userItem.setStatus("Out of Stock");
                 }
@@ -182,6 +177,44 @@ public class Utils {
                     String temp = StringUtils.isBlank(userItem.getStatus()) ? "Stocked" : userItem.getStatus() + " & Stocked";
                     userItem.setStatus(temp);
                 }
+            }
+            // TODO: 9/6/2018 temporary fix to hold the old sku.  need to fix this. 
+            userItem.setSku(userItem.getSupplierProductId());
+        };
+
+        userItems.stream().forEach(compare);
+        return userItems;
+    }
+
+    public static List<InventoryEntity> getInventoryComparison(List<InventoryEntity> userItems, List<InventoryEntity> currentProductsList, Integer margin) {
+
+        //Existing inventory to multimap
+        Multimap<String, InventoryEntity> currProductsMultiMap = ArrayListMultimap.create();
+        currentProductsList.stream().forEach(inventoryEntity -> currProductsMultiMap.put(inventoryEntity.getSku(), inventoryEntity));
+
+        Consumer<InventoryEntity> compare = userItem -> {
+
+            if(!currProductsMultiMap.containsKey(userItem.getSku())){
+                userItem.setStatus("SKU " + userItem.getSku() + "not found");
+            }else{
+                Collection<InventoryEntity> collection = currProductsMultiMap.get(userItem.getSku());
+                InventoryEntity databaseProduct = collection.stream().findAny().get();
+
+                Double suggestedPrice = Utils.getProductRecommendedPrice(databaseProduct.getShadesSellingPrice(), databaseProduct.getShippingCost(), margin);
+                if(suggestedPrice > userItem.getShadesSellingPrice()){
+                    userItem.setStatus("Under priced");
+                }else if((userItem.getShadesSellingPrice() * 100)/suggestedPrice > 1.30 ){
+                    userItem.setStatus("Over priced");
+                }
+                if(databaseProduct.getQuantity() == 0 && userItem.getQuantity() > 0){
+                    userItem.setStatus("Out of Stock");
+                }
+                if(databaseProduct.getQuantity() > 0 && userItem.getQuantity() == 0){
+                    String temp = StringUtils.isBlank(userItem.getStatus()) ? "Stocked" : userItem.getStatus() + " & Stocked";
+                    userItem.setStatus(temp);
+                }
+
+                userItem.setSuggestedPrice(suggestedPrice);
             }
             userItem.setSku(userItem.getSupplierProductId());
         };
@@ -238,8 +271,20 @@ public class Utils {
     }
 
     public static String parseSku(String sku){
-        String parsedSku = StringUtils.removeAll(StringUtils.strip(sku, "SKU:").trim(), "(\\s+)(\\d+)|(\\s+)([Xx])(\\d+)").trim();
-        parsedSku = StringUtils.removePattern(parsedSku, "[_]+\\d++").trim();
+
+        String parsedSku = StringUtils.remove(sku, "SKU:").trim();
+
+        if(Pattern.matches("\\w+-\\d+\\s\\d+", parsedSku)){
+            parsedSku = StringUtils.removeAll(parsedSku, "\\s\\d+");
+        } else if(Pattern.matches("\\w+-\\d+_\\d+", parsedSku)){
+            parsedSku = StringUtils.removeAll(parsedSku, "[_]+\\d+");
+        }else if(Pattern.matches("\\w+-\\d+-\\d+", parsedSku)){
+            parsedSku = StringUtils.substringBeforeLast(parsedSku, "-");
+        }else {
+            parsedSku = StringUtils.removeAll(parsedSku, "(\\s+)(\\d+)|(\\s+)([Xx])(\\d+)").trim();
+            parsedSku = StringUtils.removePattern(parsedSku, "[_]+\\d++").trim();
+            parsedSku = StringUtils.removePattern(parsedSku, "[-]+\\d++").trim();
+        }
         return parsedSku;
     }
 
@@ -248,23 +293,100 @@ public class Utils {
         Double includedShipping = profit15Percent + shippingCost;
         Double marketProfit = (includedShipping * 0.18) + includedShipping;
         return marketProfit;
+    }
 
+    public static Double getProductRecommendedPrice(Double shadesSalePrice, Double shippingCost, Integer margin){
+        Double profit = (shadesSalePrice * (margin/100)) + shadesSalePrice;
+        Double includedShipping = profit + shippingCost;
+        Double marketProfit = (includedShipping * 0.18) + includedShipping;
+        return marketProfit;
     }
 
     public static String cellNumberToString(Double numericCellValue) {
         DecimalFormat format = new DecimalFormat("0");
-
         return String.valueOf(format.format(numericCellValue));
     }
 
-    public static Enum<Enumerations.Suppliers> supplierChecker(String sku2Check){
+    public static int getRandomNumberInRange(int min, int max) {
 
-        if(Pattern.compile(FRAGX).matcher(sku2Check).matches()){
-            return FXEnum;
-        }else if(Pattern.compile(TELE_DYN).matcher(sku2Check).matches()){
-            return TDEnum;
-        }else{
-            return AZEnum;
+        if (min >= max) {
+            throw new IllegalArgumentException("max must be greater than min");
         }
+
+        Random r = new Random();
+        return r.nextInt((max - min) + 1) + min;
+    }
+
+    public static Double calculateShippingCost(int supplierId, int quantity, double weight){
+        logger.info("Calculating shipping cost" + supplierId + " " + quantity + " " + weight);
+        Double shippingCost;
+        
+        if(supplierId == 501){
+            shippingCost = 5.95;
+        }else if(supplierId == 503){
+            shippingCost = 6.50;
+        }else{
+            if(weight <= 1){
+               shippingCost = 7.76;
+            }else if(weight <= 2){
+               shippingCost = 10.80;
+            }else if(weight <= 3){
+               shippingCost = 15.34;
+            }else if(weight <= 4){
+               shippingCost = 18.15;
+            }else if(weight <= 5){
+               shippingCost = 21.03;
+            }else if(weight <= 6){
+               shippingCost = 24.07;
+            }else if(weight <= 7){
+               shippingCost = 27.04;
+            }else if(weight <= 8){
+               shippingCost = 30.36;
+            }else if(weight <= 9){
+               shippingCost = 33.75;
+            }else if(weight <= 10){
+               shippingCost = 36.71;
+            }else if(weight <= 11){
+               shippingCost = 39.76;
+            }else if(weight <= 12){
+               shippingCost = 42.65;
+            }else if(weight <= 13){
+               shippingCost = 44.16;
+            }else if(weight <= 14){
+               shippingCost = 46.35;
+            }else if(weight <= 15){
+               shippingCost = 47.57;
+            }else if(weight <= 16){
+               shippingCost = 50.19;
+            }else if(weight <= 17){
+               shippingCost = 52.85;
+            }else if(weight <= 18){
+               shippingCost = 55.5;
+            }else if(weight <= 19){
+               shippingCost = 58.13;
+            }else if(weight <= 20){
+               shippingCost = 60.82;
+            }else if(weight <= 21){
+               shippingCost = 61.6;
+            }else if(weight <= 22){
+               shippingCost = 62.31;
+            }else if(weight <= 23){
+               shippingCost = 62.69;
+            }else if(weight <= 24){
+               shippingCost = 64.21;
+            }else if(weight <= 25){
+               shippingCost = 65.33;
+            }else {
+               shippingCost = 99.00;
+            }
+        }
+
+        if(quantity > 1){
+            shippingCost += (quantity-1);
+        }
+
+        logger.info("End of Calculating shipping cost" + shippingCost);
+
+        return shippingCost;
     }
 }

@@ -47,6 +47,8 @@
                                 <option></option>
                                 <option value="500">AZ Trading</option>
                                 <option value="501">Fragrance X</option>
+                                <option value="502">Teledynamics</option>
+                                <option value="503">Perfume World Wide</option>
                                 <option value="599">Shades</option>
                             </select>
                         </div>

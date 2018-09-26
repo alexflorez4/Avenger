@@ -7,7 +7,8 @@ public class Enumerations {
 
         Welse(1, "Welse"), Shades(2, "Shades"), Sunsky(3, "Sunsky"), Wayuu(4, "Wayuu"),
         Phil(5, "Phil"), Melody(6, "Melody"), Lauren(7, "Lauren"), Cooper(8, "Cooper"),
-        Arse(9, "Arse"), Arca(10, "Arca"), Shopy(11, "Shopy"), Corner(12, "Corner");
+        Arse(9, "Arse"), Arca(10, "Arca"), Shopy(11, "Shopy"), Corner(12, "Corner"),
+        Ctasebay(13, "Ctasebay"), Tuff(14, "Tuff"), Test(15, "Test"), Caop(16, "Caop");
 
         Sellers(int sellerId, String sellerName) {
             this.sellerId = sellerId;
@@ -52,6 +53,14 @@ public class Enumerations {
                     return Shopy.getSellerName();
                 case 12:
                     return Corner.getSellerName();
+                case 13:
+                    return Ctasebay.getSellerName();
+                case 14:
+                    return Tuff.getSellerName();
+                case 15:
+                    return Test.getSellerName();
+                case 16:
+                    return Caop.getSellerName();
                 default:
                     return "Seller Not found";
             }
@@ -92,7 +101,8 @@ public class Enumerations {
 
     public enum Suppliers {
 
-        AZEnum(500, "AZ Trading"), FXEnum(501, "Fragrance X"), TDEnum(502, "Teledynamics"), Shades(599, "Shades");
+        AZEnum(500, "AZ Trading"), FXEnum(501, "Fragrance X"), TDEnum(502, "Teledynamics"),
+        PerfumeWorldWide(503, "Perfume World Wide"),  Shades(599, "Shades");
 
         int supplierId;
         String supplierName;
@@ -119,6 +129,8 @@ public class Enumerations {
                     return FXEnum.getSupplierName();
                 case 502:
                     return TDEnum.getSupplierName();
+                case 503:
+                    return PerfumeWorldWide.getSupplierName();
                 case 599:
                     return Shades.getSupplierName();
                 default:
