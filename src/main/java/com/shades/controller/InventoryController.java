@@ -193,7 +193,9 @@ public class InventoryController {
             stream.close();
             failingOrders =  appServices.processExpressOrder(serverFile);
         } catch (ShadesException e) {
-            e.printStackTrace();
+            logger.info("Message: " + e.getMessage());
+            String status = e.getMessage();
+            return new ModelAndView("express", "status", status);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

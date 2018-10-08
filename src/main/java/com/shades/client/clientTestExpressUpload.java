@@ -18,13 +18,13 @@ public class clientTestExpressUpload {
 
         try {
             AppServices appServices = container.getBean(AppServices.class);
-            //File amzOrders = new File("C:\\Users\\alexf\\Documents\\EA Group\\Welse\\sharew\\order052518.html");
-            //appServices.processExpressOrder(amzOrders);
+            File amzOrders = new File("C:\\Users\\alexf\\Documents\\Development\\Projects\\Shades\\Issues\\10012018.html");
+            appServices.processExpressOrder(amzOrders);
             //List<OrderEntity> orders = appServices.getSellerPendingOrders();
             //System.out.println(orders.size());
 
-            File updatedTrackings = new File("C:\\Users\\alexf\\Documents\\Development\\Projects\\Shades\\Issues\\avenger 08092018.xlsx");
-            appServices.updateTrackingIds(updatedTrackings);
+            //File updatedTrackings = new File("C:\\Users\\alexf\\Documents\\Development\\Projects\\Shades\\Issues\\avenger 08092018.xlsx");
+            //appServices.updateTrackingIds(updatedTrackings);
 
 
             //File userInventory = new File("C:\\Users\\alexf\\Documents\\Development\\Projects\\Shades\\Inventory Comparison.xlsx");

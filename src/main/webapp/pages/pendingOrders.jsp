@@ -34,6 +34,7 @@
                                     <thead>
                                     <tr>
                                         <th>No</th>
+                                        <th>Warn</th>
                                         <th>Market Order Id</th>
                                         <th>SKU</th>
                                         <th>Quantity</th>
@@ -54,6 +55,7 @@
                                         <c:forEach items="${orders}" var="order">
                                             <tr>
                                                 <td>${order.orderId}</td>
+                                                <td>${order.warning}</td>
                                                 <td>${order.marketOrderId}</td>
                                                 <td>${order.sku}</td>
                                                 <td>${order.quantity}</td>

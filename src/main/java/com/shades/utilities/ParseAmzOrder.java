@@ -134,7 +134,8 @@ public class ParseAmzOrder {
             order.setZipCode(zipAndCountryArr[0].trim());
             order.setCountry(zipAndCountryArr[1].trim());
         }else{
-            throw new ShadesException("Error parsing address in zip & country");
+            System.out.println("");
+            throw new ShadesException("Error parsing address, zip & country. In order # " + order.getMarketOrderId());
         }
 
         addRem = StringUtils.substringAfter(addRem, "Seller Name:");

@@ -25,6 +25,11 @@
                 <p>Upload Orders File</p>
 
                 <c:choose>
+                    <c:when test="${fn:contains(status, 'Error')}">
+                        <div class="alert alert-danger">
+                                ${status}
+                        </div>
+                    </c:when>
                     <c:when test="${fn:length(failingOrdersSet) gt 0}">
                         <div class="alert alert-info">
                             The following orders could not be processed:
