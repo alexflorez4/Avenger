@@ -145,7 +145,12 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.7</version>
         </dependency>
-        
+
+        <dependency>
+            <groupId>net.od</groupId>
+            <artifactId>content-utilities</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
 
     <build>

@@ -18,7 +18,7 @@ public class clientTestExpressUpload {
 
         try {
             AppServices appServices = container.getBean(AppServices.class);
-            File amzOrders = new File("C:\\Users\\alexf\\Documents\\Development\\Projects\\Shades\\Issues\\10012018.html");
+            File amzOrders = new File("C:\\Users\\alexf\\Documents\\Development\\Projects\\Shades\\Issues\\10082018.html");
             appServices.processExpressOrder(amzOrders);
             //List<OrderEntity> orders = appServices.getSellerPendingOrders();
             //System.out.println(orders.size());

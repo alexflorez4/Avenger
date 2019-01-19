@@ -11,7 +11,15 @@ public class JavaTest {
 
     public static void main(String[] args) {
 
-        System.out.println(Utils.calculateShippingCost(501, 1, 0.0));
+        /*String name = "Veronika G Hodsden";
+        int index = StringUtils.lastIndexOfAny(name, " ");
+        String first = StringUtils.substring(name, 0, index);
+        String last = StringUtils.substring(name, index, name.length());
+        System.out.println("First: " + first);
+        System.out.println("Last: " + last);*/
 
+        String x = "($4.70)";
+        x  = StringUtils.substringBetween(x, "($",")");
+        System.out.println(x);
     }
 }
