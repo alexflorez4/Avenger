@@ -5,6 +5,7 @@ import com.shades.utilities.Utils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 
 public class JavaTest {
@@ -18,8 +19,12 @@ public class JavaTest {
         System.out.println("First: " + first);
         System.out.println("Last: " + last);*/
 
-        String x = "($4.70)";
+        /*String x = "($4.70)";
         x  = StringUtils.substringBetween(x, "($",")");
-        System.out.println(x);
+        System.out.println(x);*/
+
+        for(int i= 0; i<10; i++ ){
+            System.out.println( ThreadLocalRandom.current().nextInt(3, 5 + 1));
+        }
     }
 }
